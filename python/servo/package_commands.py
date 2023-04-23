@@ -342,7 +342,9 @@ class PackageCommands(CommandBase):
             change_prefs(dir_to_resources, "macosx")
 
             print("Finding dylibs and relinking")
-            copy_dependencies(path.join(content_dir, 'servo'), content_dir)
+            # TODO(mrobinson): GStreamer dependencies don't need to be packaged
+            # with servo until the media backend is re-enabled.
+            # copy_dependencies(path.join(content_dir, 'servo'), content_dir)
 
             print("Adding version to Credits.rtf")
             version_command = [binary_path, '--version']
