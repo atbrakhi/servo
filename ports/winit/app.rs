@@ -69,12 +69,18 @@ impl App {
 
         struct Minibrowser {
             context: egui_glow::EguiGlow,
-            location: RefCell<String>,
+            location: String,
+            button_click: bool
         }
 
         impl Minibrowser {
+            fn go(&mut self) -> ServoUrl {
+                let location = self.location.clone();
+                ServoUrl::parse(&location).ok().unwrap()
+            }
+
             fn update(&mut self, window: &winit::window::Window) -> f32 {
-                let Self { context, location } = self;
+                let Self { context, location, button_click } = self;
                 let mut toolbar_height= 0.0;
                 let _duration = context.run(window, |ctx| {
                     TopBottomPanel::top("toolbar").show(ctx, |ui| {
@@ -83,12 +89,12 @@ impl App {
                             egui::Layout::right_to_left(egui::Align::Center),
                             |ui| {
                                 if ui.button("go").clicked() {
-                                    // TODO go
-                                    dbg!("go clicked");
+                                    *button_click = true;
+                                    self.go(); // Problem 1: this is causing borrow issue
                                 }
                                 ui.add_sized(
                                     ui.available_size(),
-                                    egui::TextEdit::singleline(&mut *location.borrow_mut()),
+                                    egui::TextEdit::singleline( location),
                                 );
                             },
                         );
@@ -96,8 +102,8 @@ impl App {
 
                     toolbar_height = ctx.used_rect().height();
                 });
-                context.paint(window);
 
+                context.paint(window);
                 toolbar_height
             }
         }
@@ -122,7 +128,8 @@ impl App {
         // Adapted from https://github.com/emilk/egui/blob/9478e50d012c5138551c38cbee16b07bc1fcf283/crates/egui_glow/examples/pure_glow.rs
         let mut minibrowser = window.winit_window().map(|_| Minibrowser {
             context: egui_glow::EguiGlow::new(events_loop.as_winit(), Arc::new(gl), None),
-            location: RefCell::new(ServoUrl::into_string(get_default_url()))
+            location: ServoUrl::into_string(get_default_url()),
+            button_click: false
         });
 
         if let Some(minibrowser) = minibrowser.as_mut() {
@@ -167,6 +174,16 @@ impl App {
 
                 let servo_data = Servo::new(embedder, window.clone(), user_agent.clone());
                 let mut servo = servo_data.servo;
+
+                // Handle the new url onClick of go button. Maybe we should try to find a right place for this code. We can also get refactor of button_click arg once we make it work
+                if let Some(minibrowser) = minibrowser.as_mut() {
+                    println!("button_click: {:?}", minibrowser.button_click); // Problem 2: this is always false
+                    if minibrowser.button_click {
+                        WindowEvent::LoadUrl(servo_data.browser_id, minibrowser.go());
+                        minibrowser.button_click = false // make sure we set button_click to false in order to avoid hitting LoadUrl every single time
+                    }
+                }
+
                 servo.handle_events(vec![WindowEvent::NewBrowser(get_default_url(), servo_data.browser_id)]);
                 servo.setup_logging();
 
@@ -314,6 +331,7 @@ fn get_default_url() -> ServoUrl {
         let homepage_url = pref!(shell.homepage);
         parse_url_or_filename(&cwd, &homepage_url).ok()
     };
+
     let blank_url = ServoUrl::parse("about:blank").ok();
 
     cmdline_url.or(pref_url).or(blank_url).unwrap()
