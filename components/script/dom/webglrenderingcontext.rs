@@ -4932,14 +4932,6 @@ impl Clone for WebGLMessageSender {
 }
 
 impl WebGLMessageSender {
-    fn wake_after_send<F: FnOnce() -> WebGLSendResult>(&self, f: F) -> WebGLSendResult {
-        let result = f();
-        if let Some(ref waker) = self.waker {
-            waker.wake();
-        }
-        result
-    }
-
     pub fn new(
         sender: WebGLMsgSender,
         waker: Option<Box<dyn EventLoopWaker>>,
@@ -4952,7 +4944,7 @@ impl WebGLMessageSender {
     }
 
     pub fn send(&self, msg: WebGLCommand, backtrace: WebGLCommandBacktrace) -> WebGLSendResult {
-        self.wake_after_send(|| self.sender.send(msg, backtrace))
+        self.sender.send(msg, backtrace)
     }
 
     pub fn send_resize(
@@ -4960,11 +4952,11 @@ impl WebGLMessageSender {
         size: Size2D<u32>,
         sender: WebGLSender<Result<(), String>>,
     ) -> WebGLSendResult {
-        self.wake_after_send(|| self.sender.send_resize(size, sender))
+        self.sender.send_resize(size, sender)
     }
 
     pub fn send_remove(&self) -> WebGLSendResult {
-        self.wake_after_send(|| self.sender.send_remove())
+        self.sender.send_remove()
     }
 }
 
