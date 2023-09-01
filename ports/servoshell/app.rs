@@ -12,8 +12,6 @@ use crate::parser::get_default_url;
 use crate::window_trait::WindowPortsMethods;
 use crate::{headed_window, headless_window};
 use gleam::gl;
-use winit::window::WindowId;
-use winit::event_loop::EventLoopWindowTarget;
 use servo::compositing::windowing::EmbedderEvent;
 use servo::config::opts;
 use servo::servo_config::pref;
