@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-use servoshell::parse_url_or_filename;
+use servo::embedder_traits;
+use servoshell::{parse_url_or_filename, get_default_url};
 use std::path::Path;
 
 #[cfg(not(target_os = "windows"))]
@@ -83,4 +84,19 @@ fn test_argument_parsing_special() {
     );
     assert_eq!(url.query(), None);
     assert_eq!(url.fragment(), None);
+}
+
+#[test]
+fn url_should_resolve_in_location_bar() {
+    embedder_traits::resources::set_for_tests();
+    let input = "resources/public_domains.txt";
+    
+    let result = get_default_url(Some(input.to_string()));
+    assert_eq!(result.scheme(), "file");
+
+    let mut path_segments = result.path_segments().unwrap().collect::<Vec<_>>();
+    let input_components: Vec<&str> = input.split('/').collect();
+    let contains_input = input_components.iter().all(|component| path_segments.contains(component));
+
+    assert!(contains_input);
 }

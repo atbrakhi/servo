@@ -176,14 +176,6 @@ pub fn main() {
 
     App::run(do_not_use_native_titlebar, device_pixels_per_px, user_agent, url_opt.map(|s| s.to_string()));
 
-    platform::deinit(clean_shutdown)let url_opt = if !opts_matches.free.is_empty() {
-        Some(&opts_matches.free[0][..])
-    } else {
-        None
-    };
-
-    App::run(do_not_use_native_titlebar, device_pixels_per_px, user_agent, url_opt.map(|s| s.to_string()));
-
     platform::deinit(clean_shutdown)
 }
 

@@ -19,6 +19,7 @@ use servo::script_traits::TouchEventType;
 use servo::servo_config::opts;
 use servo::servo_url::ServoUrl;
 use servo::webrender_api::ScrollLocation;
+use servoshell::sanitize_url;
 use std::env;
 use std::fs::File;
 use std::io::Write;

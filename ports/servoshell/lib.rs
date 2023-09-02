@@ -5,10 +5,10 @@
 use std::env;
 use std::path::Path;
 
-use getopts::Matches;
 use log::warn;
 use servo::servo_config::pref;
 use servo::servo_url::ServoUrl;
+use servo::net_traits::pub_domains::is_reg_domain;
 use url::{self, Url};
 
 pub fn parse_url_or_filename(cwd: &Path, input: &str) -> Result<ServoUrl, ()> {
@@ -21,16 +21,10 @@ pub fn parse_url_or_filename(cwd: &Path, input: &str) -> Result<ServoUrl, ()> {
     }
 }
 
-pub fn get_default_url(opts_matches: &Matches) -> ServoUrl {
+pub fn get_default_url(url_opt: Option<String>) -> ServoUrl {
     // If the url is not provided, we fallback to the homepage in prefs,
     // or a blank page in case the homepage is not set either.
     let cwd = env::current_dir().unwrap();
-
-    let url_opt = if !opts_matches.free.is_empty() {
-        Some(&opts_matches.free[0][..])
-    } else {
-        None
-    };
 
     let cmdline_url = url_opt.map(|s| s.to_string()).and_then(|url_string| {
         parse_url_or_filename(&cwd, &url_string)
@@ -41,11 +35,31 @@ pub fn get_default_url(opts_matches: &Matches) -> ServoUrl {
             .ok()
     });
 
+
+
     let pref_url = {
         let homepage_url = pref!(shell.homepage);
         parse_url_or_filename(&cwd, &homepage_url).ok()
     };
     let blank_url = ServoUrl::parse("about:blank").ok();
 
+
     cmdline_url.or(pref_url).or(blank_url).unwrap()
+}
+
+pub fn sanitize_url(request: &str) -> Option<ServoUrl> {
+    let request = request.trim();
+    ServoUrl::parse(request)
+        .ok()
+        .or_else(|| {
+            if request.contains('/') || is_reg_domain(request) {
+                ServoUrl::parse(&format!("https://{}", request)).ok()
+            } else {
+                None
+            }
+        })
+        .or_else(|| {
+            let url = pref!(shell.searchpage).replace("%s", request);
+            ServoUrl::parse(&url).ok()
+        })
 }
