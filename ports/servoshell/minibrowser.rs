@@ -5,8 +5,9 @@
  use std::{cell::{RefCell, Cell}, sync::Arc, time::Instant};
 
 use egui::{TopBottomPanel, Modifiers, Key};
-use servo::{servo_url::ServoUrl, compositing::windowing::EmbedderEvent};
+use servo::compositing::windowing::EmbedderEvent;
 use servo::webrender_surfman::WebrenderSurfman;
+use servoshell::sanitize_url;
 
 use crate::{egui_glue::EguiGlow, events_loop::EventsLoop, browser::Browser, window_trait::WindowPortsMethods};
 
@@ -99,11 +100,12 @@ impl Minibrowser {
                 MinibrowserEvent::Go => {
                     let browser_id = browser.browser_id().unwrap();
                     let location = self.location.borrow();
-                    let Ok(url) = ServoUrl::parse(&location) else {
+                    if let Some(url) = sanitize_url(&location.clone()) {
+                        app_event_queue.push(EmbedderEvent::LoadUrl(browser_id, url));
+                    } else {
                         warn!("failed to parse location");
                         break;
-                    };
-                    app_event_queue.push(EmbedderEvent::LoadUrl(browser_id, url));
+                    }
                 },
             }
         }

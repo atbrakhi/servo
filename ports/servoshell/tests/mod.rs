@@ -2,9 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-use servo::embedder_traits;
-use servoshell::{parse_url_or_filename, get_default_url};
+use servo::{embedder_traits, servo_url::ServoUrl};
+use servoshell::{parse_url_or_filename, get_default_url, sanitize_url};
 use std::path::Path;
+use std::fs::File;
+use std::io::Write;
+use std::env;
+
 
 #[cfg(not(target_os = "windows"))]
 const FAKE_CWD: &'static str = "/fake/cwd";
@@ -87,16 +91,97 @@ fn test_argument_parsing_special() {
 }
 
 #[test]
+fn url_should_resolve_in_commad_line() {
+    embedder_traits::resources::set_for_tests();
+    let input = "resources/public_domains.txt";
+    let readme_directory = "../../";
+    env::set_current_dir(&readme_directory).expect("Failed to set current directory");
+
+    let result = get_default_url(Some(input.to_string()));
+    assert_eq!(result.scheme(), "file");
+}
+
+#[test]
 fn url_should_resolve_in_location_bar() {
     embedder_traits::resources::set_for_tests();
     let input = "resources/public_domains.txt";
-    
-    let result = get_default_url(Some(input.to_string()));
-    assert_eq!(result.scheme(), "file");
+    let expected_result = ServoUrl::parse("https://resources/public_domains.txt").ok();
+    let result = sanitize_url(input);
+    assert_eq!(result, expected_result);
+}
 
-    let mut path_segments = result.path_segments().unwrap().collect::<Vec<_>>();
-    let input_components: Vec<&str> = input.split('/').collect();
-    let contains_input = input_components.iter().all(|component| path_segments.contains(component));
+#[test]
+fn no_dots_keyword_should_resolve_in_commad_line_as_file_path() {
+    embedder_traits::resources::set_for_tests();
 
+    let current_dir = env::current_dir().expect("Failed to get current directory");
+
+    // Create a temporary file called dragonfruit
+    let file_path = current_dir.join("dragonfruit");
+    let file = File::create(&file_path).expect("Failed to create dragonfruit file");
+
+    let path =  file_path.to_string_lossy().to_string();
+    let input = "dragonfruit";
+
+    let url = get_default_url(Some(input.to_string()));
+
+    let path_segments = url.path_segments().unwrap().collect::<Vec<_>>();
+    let contains_input = path_segments.contains(&input);
+
+    assert_eq!(url.scheme(), "file");
     assert!(contains_input);
+
+    // Remove the temporary dragonfruit file
+    std::fs::remove_file(&file_path).expect("Failed to remove dragonfruit file");
+}
+
+#[test]
+// if no file named with keyword exists locally, it should be trated as search keyword
+fn no_dots_keyword_should_resolve_in_commad_line_as_url() {
+    embedder_traits::resources::set_for_tests();
+    let input = "dragonfruit1";
+
+    let result = get_default_url(Some(input.to_string()));
+
+    assert_eq!(result.scheme(), "https");
+    assert_eq!(result.domain(), Some("duckduckgo.com"));
+    assert_eq!(result.query(), Some("q=dragonfruit1"));;
+}
+
+#[test]
+fn no_dots_keyword_should_resolve_in_as_search() {
+    embedder_traits::resources::set_for_tests();
+    let input = "dragonfruit";
+    let input1 = "README.md";
+
+    // in location bar
+    let location_bar_url = sanitize_url(input);
+    let binding = location_bar_url.clone().unwrap();
+
+    assert_eq!(binding.scheme(), "https");
+    assert_eq!(binding.domain(), Some("duckduckgo.com"));
+    assert_eq!(binding.query(), Some("q=dragonfruit"));
+
+
+    let expected_result = ServoUrl::parse("https://README.md").ok();
+    let location_bar_url1 = sanitize_url(input1);
+    assert_eq!(location_bar_url1, expected_result);
+
+
+    // in command line
+    let command_line_url = get_default_url(Some(input.to_string()));
+
+    assert_eq!(command_line_url.scheme(), "https");
+    assert_eq!(command_line_url.domain(), Some("duckduckgo.com"));
+    assert_eq!(command_line_url.query(), Some("q=dragonfruit"));
+
+    let readme_directory = "./";
+    env::set_current_dir(&readme_directory).expect("Failed to set current directory");
+    let command_line_url1 = get_default_url(Some(input1.to_string()));
+    let path_segments = command_line_url1.path_segments().unwrap().collect::<Vec<_>>();
+    let contains_input = path_segments.contains(&input1);
+
+    assert_eq!(command_line_url1.scheme(), "file");
+    assert!(contains_input);
+
 }
