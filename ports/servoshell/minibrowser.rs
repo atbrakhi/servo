@@ -7,9 +7,8 @@
 use egui::{TopBottomPanel, Modifiers, Key};
 use servo::compositing::windowing::EmbedderEvent;
 use servo::webrender_surfman::WebrenderSurfman;
-use servoshell::sanitize_url;
 
-use crate::{egui_glue::EguiGlow, events_loop::EventsLoop, browser::Browser, window_trait::WindowPortsMethods};
+use crate::{egui_glue::EguiGlow, events_loop::EventsLoop, browser::Browser, window_trait::WindowPortsMethods, parser::sanitize_url};
 
 pub struct Minibrowser {
     pub context: EguiGlow,
