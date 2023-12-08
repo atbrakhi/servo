@@ -5,6 +5,7 @@
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
+use app_units::Au;
 use canvas_traits::canvas::{CanvasId, CanvasMsg, FromLayoutMsg};
 use ipc_channel::ipc::{self, IpcSender};
 use msg::constellation_msg::{BrowsingContextId, PipelineId};
@@ -15,15 +16,16 @@ use servo_arc::Arc as ServoArc;
 use style::properties::ComputedValues;
 use style::servo::url::ComputedUrl;
 use style::values::computed::image::Image as ComputedImage;
-use style::values::computed::{Length, LengthOrAuto};
+use style::values::computed::{Length, LengthOrAuto, CSSPixelLength};
 use style::values::CSSFloat;
 use style::Zero;
+use style::values::generics::length::GenericLengthPercentageOrAuto;
 use webrender_api::ImageKey;
 
 use crate::context::LayoutContext;
 use crate::dom::NodeExt;
 use crate::fragment_tree::{BaseFragmentInfo, Fragment, IFrameFragment, ImageFragment};
-use crate::geom::{LogicalRect, LogicalVec2, PhysicalSize};
+use crate::geom::{LogicalRect, LogicalVec2, PhysicalSize, AuOrAuto};
 use crate::sizing::ContentSizes;
 use crate::style_ext::{ComputedValuesExt, PaddingBorderMargin};
 use crate::ContainingBlock;
@@ -51,25 +53,25 @@ pub(crate) struct ReplacedContent {
 ///   to https://drafts.csswg.org/css-images/#intrinsic-dimensions.
 #[derive(Debug, Serialize)]
 pub(crate) struct IntrinsicSizes {
-    pub width: Option<Length>,
-    pub height: Option<Length>,
-    pub ratio: Option<CSSFloat>,
+    pub width: Option<Au>,
+    pub height: Option<Au>,
+    pub ratio: Option<i32>,
 }
 
 impl IntrinsicSizes {
-    pub(crate) fn from_width_and_height(width: f32, height: f32) -> Self {
+    pub(crate) fn from_width_and_height(width: i32, height: i32) -> Self {
         // https://drafts.csswg.org/css-images/#natural-aspect-ratio:
         // "If an object has a degenerate natural aspect ratio (at least one part being
         // zero or infinity), it is treated as having no natural aspect ratio.""
-        let ratio = if width.is_normal() && height.is_normal() {
+        let ratio = if width != 0 && height != 0 {
             Some(width / height)
         } else {
             None
         };
 
         Self {
-            width: Some(Length::new(width)),
-            height: Some(Length::new(height)),
+            width: Some(Au(0)),
+            height: Some(Au(0)),
             ratio,
         }
     }
@@ -155,9 +157,9 @@ impl ReplacedContent {
                 // FIXME: should 'image-resolution' (when implemented) be used *instead* of
                 // `script::dom::htmlimageelement::ImageRequest::current_pixel_density`?
                 // https://drafts.csswg.org/css-images-4/#the-image-resolution
-                let dppx = 1.0;
-                let width = (intrinsic_size_in_dots.width as CSSFloat) / dppx;
-                let height = (intrinsic_size_in_dots.height as CSSFloat) / dppx;
+                let dppx = 1;
+                let width = (intrinsic_size_in_dots.width as i32) / dppx;
+                let height = (intrinsic_size_in_dots.height as i32) / dppx;
                 IntrinsicSizes::from_width_and_height(width, height)
             },
         );
@@ -182,17 +184,17 @@ impl ReplacedContent {
                 UsePlaceholder::No,
             ) {
                 Some(ImageOrMetadataAvailable::ImageAvailable { image, .. }) => {
-                    (Some(image.clone()), image.width as f32, image.height as f32)
+                    (Some(image.clone()), image.width, image.height)
                 },
                 Some(ImageOrMetadataAvailable::MetadataAvailable(metadata)) => {
-                    (None, metadata.width as f32, metadata.height as f32)
+                    (None, metadata.width, metadata.height)
                 },
                 None => return None,
             };
 
             return Some(Self {
                 kind: ReplacedContentKind::Image(image),
-                intrinsic: IntrinsicSizes::from_width_and_height(width, height),
+                intrinsic: IntrinsicSizes::from_width_and_height(width as i32, height as i32),
                 base_fragment_info: BaseFragmentInfo::new_for_node(element.opaque()),
             });
         }
@@ -210,7 +212,7 @@ impl ReplacedContent {
         }
     }
 
-    fn flow_relative_intrinsic_size(&self, style: &ComputedValues) -> LogicalVec2<Option<Length>> {
+    fn flow_relative_intrinsic_size(&self, style: &ComputedValues) -> LogicalVec2<Option<Au>> {
         let intrinsic_size = PhysicalSize::new(self.intrinsic.width, self.intrinsic.height);
         LogicalVec2::from_physical_size(&intrinsic_size, style.writing_mode)
     }
@@ -218,13 +220,15 @@ impl ReplacedContent {
     pub fn inline_size_over_block_size_intrinsic_ratio(
         &self,
         style: &ComputedValues,
-    ) -> Option<CSSFloat> {
+    ) -> Option<Au> {
         self.intrinsic.ratio.map(|width_over_height| {
-            if style.writing_mode.is_vertical() {
-                1. / width_over_height
+            let ratio = if style.writing_mode.is_vertical() {
+                1 / width_over_height
             } else {
                 width_over_height
-            }
+            };
+
+            Au::from_f32_px(ratio as f32)
         })
     }
 
@@ -235,17 +239,17 @@ impl ReplacedContent {
         let inline = self
             .flow_relative_intrinsic_size(style)
             .inline
-            .unwrap_or(Length::zero());
+            .unwrap_or(Au::zero());
         ContentSizes {
-            min_content: inline,
-            max_content: inline,
+            min_content: inline.into(),
+            max_content: inline.into(),
         }
     }
 
     pub fn make_fragments<'a>(
         &'a self,
         style: &ServoArc<ComputedValues>,
-        size: LogicalVec2<Length>,
+        size: LogicalVec2<Au>,
     ) -> Vec<Fragment> {
         match &self.kind {
             ReplacedContentKind::Image(image) => image
@@ -257,7 +261,7 @@ impl ReplacedContent {
                         style: style.clone(),
                         rect: LogicalRect {
                             start_corner: LogicalVec2::zero(),
-                            size,
+                            size: LogicalVec2 {inline: size.inline.into(), block: size.block.into()},
                         },
                         image_key,
                     })
@@ -272,13 +276,13 @@ impl ReplacedContent {
                     browsing_context_id: iframe.browsing_context_id,
                     rect: LogicalRect {
                         start_corner: LogicalVec2::zero(),
-                        size,
+                        size: LogicalVec2 {inline: size.inline.into(), block: size.block.into()},
                     },
                 })]
             },
             ReplacedContentKind::Canvas(canvas_info) => {
-                if self.intrinsic.width == Some(Length::zero()) ||
-                    self.intrinsic.height == Some(Length::zero())
+                if self.intrinsic.width == Some(Au::zero()) ||
+                    self.intrinsic.height == Some(Au::zero())
                 {
                     return vec![];
                 }
@@ -306,7 +310,7 @@ impl ReplacedContent {
                     style: style.clone(),
                     rect: LogicalRect {
                         start_corner: LogicalVec2::zero(),
-                        size,
+                        size: LogicalVec2 {inline: size.inline.into(), block: size.block.into()},
                     },
                     image_key,
                 })]
@@ -323,18 +327,18 @@ impl ReplacedContent {
         &self,
         containing_block: &ContainingBlock,
         style: &ComputedValues,
-        box_size: Option<LogicalVec2<LengthOrAuto>>,
+        box_size: Option<LogicalVec2<AuOrAuto>>,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<Length> {
+    ) -> LogicalVec2<Au> {
         let mode = style.writing_mode;
         let intrinsic_size = self.flow_relative_intrinsic_size(style);
         let intrinsic_ratio = self.inline_size_over_block_size_intrinsic_ratio(style);
-
+        //its important to convert box_size and max_box_size into Au. Else lots of errors
         let box_size = box_size.unwrap_or(style.content_box_size(containing_block, &pbm));
         let max_box_size = style.content_max_box_size(containing_block, &pbm);
         let min_box_size = style
             .content_min_box_size(containing_block, &pbm)
-            .auto_is(Length::zero);
+            .auto_is(Au::zero);
 
         let default_object_size = || {
             // FIXME:
@@ -344,48 +348,48 @@ impl ReplacedContent {
             // “height of the largest rectangle that has a 2:1 ratio, has a height not greater
             //  than 150px, and has a width not greater than the device width.”
             LogicalVec2::from_physical_size(
-                &PhysicalSize::new(Length::new(300.), Length::new(150.)),
+                &PhysicalSize::new(Au(300), Au(150)),
                 mode,
             )
         };
-        let clamp = |inline_size: Length, block_size: Length| LogicalVec2 {
-            inline: inline_size.clamp_between_extremums(min_box_size.inline, max_box_size.inline),
-            block: block_size.clamp_between_extremums(min_box_size.block, max_box_size.block),
+        let clamp_val = |inline_size: Au, block_size: Au| LogicalVec2 {
+            inline: inline_size.clamp(min_box_size.inline, max_box_size.inline.unwrap()),
+            block: block_size.clamp(min_box_size.block, max_box_size.block.unwrap()),
         };
         // https://drafts.csswg.org/css2/visudet.html#min-max-widths
         // https://drafts.csswg.org/css2/visudet.html#min-max-heights
         match (box_size.inline, box_size.block) {
-            (LengthOrAuto::LengthPercentage(inline), LengthOrAuto::LengthPercentage(block)) => {
-                clamp(inline, block)
+            (AuOrAuto::LengthPercentage(inline), AuOrAuto::LengthPercentage(block)) => {
+                clamp_val(inline, block)
             },
-            (LengthOrAuto::LengthPercentage(inline), LengthOrAuto::Auto) => {
+            (AuOrAuto::LengthPercentage(inline), AuOrAuto::Auto) => {
                 let block = if let Some(i_over_b) = intrinsic_ratio {
-                    inline / i_over_b
+                    inline / i_over_b.to_px()
                 } else if let Some(block) = intrinsic_size.block {
                     block
                 } else {
                     default_object_size().block
                 };
-                clamp(inline, block)
+                clamp_val(inline, block)
             },
-            (LengthOrAuto::Auto, LengthOrAuto::LengthPercentage(block)) => {
+            (AuOrAuto::Auto, AuOrAuto::LengthPercentage(block)) => {
                 let inline = if let Some(i_over_b) = intrinsic_ratio {
-                    block * i_over_b
+                    block * i_over_b.to_px()
                 } else if let Some(inline) = intrinsic_size.inline {
                     inline
                 } else {
                     default_object_size().inline
                 };
-                clamp(inline, block)
+                clamp_val(inline, block)
             },
-            (LengthOrAuto::Auto, LengthOrAuto::Auto) => {
+            (AuOrAuto::Auto, AuOrAuto::Auto) => {
                 let inline_size =
                     match (intrinsic_size.inline, intrinsic_size.block, intrinsic_ratio) {
                         (Some(inline), _, _) => inline,
                         (None, Some(block), Some(i_over_b)) => {
                             // “used height” in CSS 2 is always gonna be the intrinsic one,
                             // since it is available.
-                            block * i_over_b
+                            block * i_over_b.to_px()
                         },
                         // FIXME
                         //
@@ -410,15 +414,15 @@ impl ReplacedContent {
                     block
                 } else if let Some(i_over_b) = intrinsic_ratio {
                     // “used width” in CSS 2 is what we just computed above
-                    inline_size / i_over_b
+                    inline_size / i_over_b.to_px()
                 } else {
                     default_object_size().block
                 };
 
                 let i_over_b = if let Some(i_over_b) = intrinsic_ratio {
-                    i_over_b
+                    i_over_b as Au
                 } else {
-                    return clamp(inline_size, block_size);
+                    return clamp_val(inline_size, block_size);
                 };
 
                 // https://drafts.csswg.org/css2/visudet.html#min-max-widths
@@ -426,15 +430,15 @@ impl ReplacedContent {
                 //  'width' and 'height' specified as 'auto', the algorithm is as follows”
                 enum Violation {
                     None,
-                    Below(Length),
-                    Above(Length),
+                    Below(Au),
+                    Above(Au),
                 }
-                let violation = |size, min_size, mut max_size: Option<Length>| {
+                let violation = |size, min_size, mut max_size: Option<Au>| {
                     if let Some(max) = max_size.as_mut() {
-                        max.max_assign(min_size);
+                        max.max(min_size);
                     }
-                    if size < min_size {
-                        return Violation::Below(min_size);
+                    if size < *min_size {
+                        return Violation::Below(*min_size);
                     }
                     match max_size {
                         Some(max_size) if size > max_size => Violation::Above(max_size),
@@ -442,8 +446,8 @@ impl ReplacedContent {
                     }
                 };
                 match (
-                    violation(inline_size, min_box_size.inline, max_box_size.inline),
-                    violation(block_size, min_box_size.block, max_box_size.block),
+                    violation(inline_size, &mut min_box_size.inline, max_box_size.inline),
+                    violation(block_size, &mut min_box_size.block, max_box_size.block),
                 ) {
                     // Row 1.
                     (Violation::None, Violation::None) => LogicalVec2 {
@@ -453,58 +457,84 @@ impl ReplacedContent {
                     // Row 2.
                     (Violation::Above(max_inline_size), Violation::None) => LogicalVec2 {
                         inline: max_inline_size,
-                        block: (max_inline_size / i_over_b).max(min_box_size.block),
+                        block: Au((max_inline_size / i_over_b).max(min_box_size.block.to_px())),
                     },
                     // Row 3.
-                    (Violation::Below(min_inline_size), Violation::None) => LogicalVec2 {
-                        inline: min_inline_size,
-                        block: (min_inline_size / i_over_b).clamp_below_max(max_box_size.block),
+                    (Violation::Below(min_inline_size), Violation::None) => {
+                        let calculated_block_size = min_inline_size / i_over_b;
+
+                        let block_size = match max_box_size.block {
+                            Some(max_size) => calculated_block_size.min(max_size.0), // Use the smaller of the two sizes
+                            None => calculated_block_size, // If no max, use the calculated size
+                        };
+                        LogicalVec2 {
+                            inline: min_inline_size,
+                            block: Au(block_size),
+                        }
                     },
                     // Row 4.
                     (Violation::None, Violation::Above(max_block_size)) => LogicalVec2 {
-                        inline: (max_block_size * i_over_b).max(min_box_size.inline),
-                        block: max_block_size,
+                            inline: Au(max_block_size.to_px() * i_over_b.to_px()).max(min_box_size.inline),
+                            block: max_block_size,
                     },
                     // Row 5.
-                    (Violation::None, Violation::Below(min_block_size)) => LogicalVec2 {
-                        inline: (min_block_size * i_over_b).clamp_below_max(max_box_size.inline),
-                        block: min_block_size,
+                    (Violation::None, Violation::Below(min_block_size)) => {
+                        let calculated_block_size = min_block_size / i_over_b;
+
+                        let inline_size = match max_box_size.inline {
+                            Some(max_size) => calculated_block_size.min(max_size.0), // Use the smaller of the two sizes
+                            None => calculated_block_size, // If no max, use the calculated size
+                        };
+                        LogicalVec2 {
+                            inline: Au(inline_size),
+                            block: min_block_size,
+                        }
                     },
                     // Rows 6-7.
                     (Violation::Above(max_inline_size), Violation::Above(max_block_size)) => {
-                        if max_inline_size.px() / inline_size.px() <=
-                            max_block_size.px() / block_size.px()
+                        if max_inline_size.ceil_to_px() / inline_size.ceil_to_px() <=
+                            max_block_size.ceil_to_px() / block_size.ceil_to_px()
                         {
                             // Row 6.
                             LogicalVec2 {
                                 inline: max_inline_size,
-                                block: (max_inline_size / i_over_b).max(min_box_size.block),
+                                block: app_units::Au((max_inline_size / i_over_b).max(min_box_size.block.to_px())),
                             }
                         } else {
                             // Row 7.
                             LogicalVec2 {
-                                inline: (max_block_size * i_over_b).max(min_box_size.inline),
+                                inline: Au(max_block_size.to_px() * i_over_b.to_px()).max(min_box_size.inline),
                                 block: max_block_size,
                             }
                         }
                     },
                     // Rows 8-9.
                     (Violation::Below(min_inline_size), Violation::Below(min_block_size)) => {
-                        if min_inline_size.px() / inline_size.px() <=
-                            min_block_size.px() / block_size.px()
+                        if min_inline_size.ceil_to_px() / inline_size.ceil_to_px() <=
+                            min_block_size.ceil_to_px() / block_size.ceil_to_px()
                         {
                             // Row 8.
+                            let calculated_inline_size = (min_block_size.to_px()) * (i_over_b.to_px());
+                            let inline_size = match max_box_size.inline {
+                                Some(max_size) => calculated_inline_size.min(max_size.to_px()),
+                                None => calculated_inline_size,
+                            };
+
                             LogicalVec2 {
-                                inline: (min_block_size * i_over_b)
-                                    .clamp_below_max(max_box_size.inline),
+                                inline: Au(inline_size),
                                 block: min_block_size,
                             }
                         } else {
                             // Row 9.
+                            let calculated_block_size = min_inline_size / i_over_b;
+                            let block_size = match max_box_size.block {
+                                Some(max_size) => calculated_block_size.min(max_size.0),
+                                None => calculated_block_size,
+                            };
+
                             LogicalVec2 {
                                 inline: min_inline_size,
-                                block: (min_inline_size / i_over_b)
-                                    .clamp_below_max(max_box_size.block),
+                                block: Au(block_size),
                             }
                         }
                     },

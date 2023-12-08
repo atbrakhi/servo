@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use app_units::Au;
 use servo_config::pref;
 use style::computed_values::mix_blend_mode::T as ComputedMixBlendMode;
 use style::computed_values::position::T as ComputedPosition;
@@ -20,7 +21,7 @@ use style::Zero;
 use webrender_api as wr;
 
 use crate::geom::{
-    LengthOrAuto, LengthPercentageOrAuto, LogicalSides, LogicalVec2, PhysicalSides, PhysicalSize,
+    LengthOrAuto, LengthPercentageOrAuto, LogicalSides, LogicalVec2, PhysicalSides, PhysicalSize, AuOrAuto,
 };
 use crate::ContainingBlock;
 
@@ -138,17 +139,17 @@ pub(crate) trait ComputedValuesExt {
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<LengthOrAuto>;
+    ) -> LogicalVec2<AuOrAuto>;
     fn content_min_box_size(
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<LengthOrAuto>;
+    ) -> LogicalVec2<AuOrAuto>;
     fn content_max_box_size(
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<Option<Length>>;
+    ) -> LogicalVec2<Option<Au>>;
     fn padding_border_margin(&self, containing_block: &ContainingBlock) -> PaddingBorderMargin;
     fn padding(
         &self,
@@ -257,17 +258,22 @@ impl ComputedValuesExt for ComputedValues {
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<LengthOrAuto> {
+    ) -> LogicalVec2<AuOrAuto> {
         let box_size = self
             .box_size(containing_block.style.writing_mode)
             .percentages_relative_to(containing_block);
+
+        let box_size_in_au  = LogicalVec2 {
+            inline: box_size.inline.map(|t| -> Au { t.into() }),
+            block: box_size.block.map(|t| -> Au { t.into() }),
+        };
         match self.get_position().box_sizing {
-            BoxSizing::ContentBox => box_size,
+            BoxSizing::ContentBox => box_size_in_au,
             BoxSizing::BorderBox => LogicalVec2 {
                 // These may be negative, but will later be clamped by `min-width`/`min-height`
                 // which is clamped to zero.
-                inline: box_size.inline.map(|i| i - pbm.padding_border_sums.inline),
-                block: box_size.block.map(|b| b - pbm.padding_border_sums.block),
+                inline: box_size_in_au.inline.map(|i| i - pbm.padding_border_sums.inline.into()),
+                block: box_size_in_au.block.map(|b| b - pbm.padding_border_sums.block.into()),
             },
         }
     }
@@ -276,20 +282,25 @@ impl ComputedValuesExt for ComputedValues {
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<LengthOrAuto> {
+    ) -> LogicalVec2<AuOrAuto> {
         let min_box_size = self
             .min_box_size(containing_block.style.writing_mode)
             .percentages_relative_to(containing_block);
+
+        let min_box_size_in_au  = LogicalVec2 {
+            inline: min_box_size.inline.map(|t| -> Au { t.into() }),
+            block: min_box_size.block.map(|t| -> Au { t.into() }),
+        };
         match self.get_position().box_sizing {
-            BoxSizing::ContentBox => min_box_size,
+            BoxSizing::ContentBox => min_box_size_in_au,
             BoxSizing::BorderBox => LogicalVec2 {
                 // Clamp to zero to make sure the used size components are non-negative
-                inline: min_box_size
+                inline: min_box_size_in_au
                     .inline
-                    .map(|i| (i - pbm.padding_border_sums.inline).max(Length::zero())),
-                block: min_box_size
+                    .map(|i| (i - pbm.padding_border_sums.inline.into()).max(Au::zero())),
+                block: min_box_size_in_au
                     .block
-                    .map(|b| (b - pbm.padding_border_sums.block).max(Length::zero())),
+                    .map(|b| (b - pbm.padding_border_sums.block.into()).max(Au::zero())),
             },
         }
     }
@@ -298,22 +309,27 @@ impl ComputedValuesExt for ComputedValues {
         &self,
         containing_block: &ContainingBlock,
         pbm: &PaddingBorderMargin,
-    ) -> LogicalVec2<Option<Length>> {
+    ) -> LogicalVec2<Option<Au>> {
         let max_box_size = self
             .max_box_size(containing_block.style.writing_mode)
             .percentages_relative_to(containing_block);
+
+        let box_size_in_au  = LogicalVec2 {
+            inline: max_box_size.inline.map(|t| -> Au { t.into() }),
+            block: max_box_size.block.map(|t| -> Au { t.into() }),
+        };
         match self.get_position().box_sizing {
-            BoxSizing::ContentBox => max_box_size,
+            BoxSizing::ContentBox => box_size_in_au,
             BoxSizing::BorderBox => {
                 // This may be negative, but will later be clamped by `min-width`
                 // which itself is clamped to zero.
                 LogicalVec2 {
-                    inline: max_box_size
+                    inline: box_size_in_au
                         .inline
-                        .map(|i| i - pbm.padding_border_sums.inline),
-                    block: max_box_size
+                        .map(|i| i - pbm.padding_border_sums.inline.into()),
+                    block: box_size_in_au
                         .block
-                        .map(|b| b - pbm.padding_border_sums.block),
+                        .map(|b| b - pbm.padding_border_sums.block.into()),
                 }
             },
         }
