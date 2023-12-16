@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use app_units::Au;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::prelude::{IndexedParallelIterator, ParallelIterator};
 use serde::Serialize;
@@ -19,7 +20,7 @@ use crate::formatting_contexts::IndependentFormattingContext;
 use crate::fragment_tree::{
     AbsoluteBoxOffsets, BoxFragment, CollapsedBlockMargins, Fragment, HoistedSharedFragment,
 };
-use crate::geom::{LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2};
+use crate::geom::{LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2, AuOrAuto};
 use crate::style_ext::{ComputedValuesExt, DisplayInside};
 use crate::{ContainingBlock, DefiniteContainingBlock};
 
@@ -254,8 +255,13 @@ impl PositioningContext {
             start_corner: LogicalVec2::zero(),
         }
         .inflate(&new_fragment.padding);
+
+        let padding_rect_size: LogicalVec2<Au> = LogicalVec2 {
+            inline: padding_rect.size.inline.into(),
+            block: padding_rect.size.block.into(),
+        };
         let containing_block = DefiniteContainingBlock {
-            size: padding_rect.size.clone(),
+            size: padding_rect_size.clone(),
             style: &new_fragment.style,
         };
 
@@ -490,8 +496,8 @@ impl HoistedAbsolutelyPositionedBox {
                     &pbm,
                 );
                 LogicalVec2 {
-                    inline: LengthOrAuto::LengthPercentage(used_size.inline),
-                    block: LengthOrAuto::LengthPercentage(used_size.block),
+                    inline: AuOrAuto::LengthPercentage(used_size.inline),
+                    block: AuOrAuto::LengthPercentage(used_size.block),
                 }
             },
             IndependentFormattingContext::NonReplaced(non_replaced) => non_replaced
@@ -501,7 +507,7 @@ impl HoistedAbsolutelyPositionedBox {
 
         let shared_fragment = self.fragment.borrow();
         let inline_axis_solver = AbsoluteAxisSolver {
-            containing_size: cbis,
+            containing_size: cbis.into(),
             padding_border_sum: pbm.padding_border_sums.inline,
             computed_margin_start: pbm.margin.inline_start,
             computed_margin_end: pbm.margin.inline_end,
@@ -510,7 +516,7 @@ impl HoistedAbsolutelyPositionedBox {
         };
 
         let block_axis_solver = AbsoluteAxisSolver {
-            containing_size: cbbs,
+            containing_size: cbbs.into(),
             padding_border_sum: pbm.padding_border_sums.block,
             computed_margin_start: pbm.margin.block_start,
             computed_margin_end: pbm.margin.block_end,
@@ -546,7 +552,7 @@ impl HoistedAbsolutelyPositionedBox {
                     let min_size = non_replaced
                         .style
                         .content_min_box_size(&containing_block.into(), &pbm)
-                        .auto_is(|| Length::zero());
+                        .auto_is(|| Au::zero());
                     let max_size = non_replaced
                         .style
                         .content_max_box_size(&containing_block.into(), &pbm);
@@ -560,10 +566,10 @@ impl HoistedAbsolutelyPositionedBox {
                         };
                         let margin_sum = inline_axis.margin_start + inline_axis.margin_end;
                         let available_size =
-                            cbis - anchor - pbm.padding_border_sums.inline - margin_sum;
+                            cbis - anchor - pbm.padding_border_sums.inline.into() - margin_sum;
                         non_replaced
                             .inline_content_sizes(layout_context)
-                            .shrink_to_fit(available_size)
+                            .shrink_to_fit(available_size.into()).into()
                     });
 
                     // If the tentative used inline size is greater than ‘max-inline-size’,
@@ -572,9 +578,9 @@ impl HoistedAbsolutelyPositionedBox {
                     // because a non-‘auto’ computed ‘inline-size’ always becomes the used value.
                     // https://drafts.csswg.org/css2/#min-max-widths (step 2)
                     if let Some(max) = max_size.inline {
-                        if inline_size > max {
+                        if inline_size > max.into() {
                             inline_axis = inline_axis_solver
-                                .solve_for_size(LengthOrAuto::LengthPercentage(max));
+                                .solve_for_size(AuOrAuto::LengthPercentage(max));
                             inline_size = inline_axis.size.auto_is(|| unreachable!());
                         }
                     }
@@ -584,14 +590,14 @@ impl HoistedAbsolutelyPositionedBox {
                     // computed ‘inline-size’. We can assume the new inline size won’t be ‘auto’,
                     // because a non-‘auto’ computed ‘inline-size’ always becomes the used value.
                     // https://drafts.csswg.org/css2/#min-max-widths (step 3)
-                    if inline_size < min_size.inline {
+                    if inline_size < min_size.inline.into() {
                         inline_axis = inline_axis_solver
-                            .solve_for_size(LengthOrAuto::LengthPercentage(min_size.inline));
+                            .solve_for_size(AuOrAuto::LengthPercentage(min_size.inline));
                         inline_size = inline_axis.size.auto_is(|| unreachable!());
                     }
 
                     struct Result {
-                        content_size: LogicalVec2<CSSPixelLength>,
+                        content_size: LogicalVec2<Au>,
                         fragments: Vec<Fragment>,
                     }
 
@@ -600,7 +606,7 @@ impl HoistedAbsolutelyPositionedBox {
                     // percentages may be resolved incorrectly.
                     let mut try_layout = |size| {
                         let containing_block_for_children = ContainingBlock {
-                            inline_size,
+                            inline_size: inline_size.into(),
                             block_size: size,
                             style: &non_replaced.style,
                         };
@@ -625,14 +631,14 @@ impl HoistedAbsolutelyPositionedBox {
                         let block_size = size.auto_is(|| independent_layout.content_block_size);
                         Result {
                             content_size: LogicalVec2 {
-                                inline: inline_size,
-                                block: block_size,
+                                inline: inline_size.into(),
+                                block: block_size.into(),
                             },
                             fragments: independent_layout.fragments,
                         }
                     };
 
-                    let mut result = try_layout(block_axis.size);
+                    let mut result = try_layout(block_axis.size.map(|t| t.into()));
 
                     // If the tentative used block size is greater than ‘max-block-size’,
                     // recalculate the block size and margins with ‘max-block-size’ as the
@@ -640,10 +646,10 @@ impl HoistedAbsolutelyPositionedBox {
                     // because a non-‘auto’ computed ‘block-size’ always becomes the used value.
                     // https://drafts.csswg.org/css2/#min-max-heights (step 2)
                     if let Some(max) = max_size.block {
-                        if result.content_size.block > max {
+                        if result.content_size.block > max.into() {
                             block_axis = block_axis_solver
-                                .solve_for_size(LengthOrAuto::LengthPercentage(max));
-                            result = try_layout(LengthOrAuto::LengthPercentage(max));
+                                .solve_for_size(AuOrAuto::LengthPercentage(max));
+                            result = try_layout(LengthOrAuto::LengthPercentage(max.into()));
                         }
                     }
 
@@ -652,10 +658,10 @@ impl HoistedAbsolutelyPositionedBox {
                     // computed ‘block-size’. We can assume the new block size won’t be ‘auto’,
                     // because a non-‘auto’ computed ‘block-size’ always becomes the used value.
                     // https://drafts.csswg.org/css2/#min-max-heights (step 3)
-                    if result.content_size.block < min_size.block {
+                    if result.content_size.block < min_size.block.into() {
                         block_axis = block_axis_solver
-                            .solve_for_size(LengthOrAuto::LengthPercentage(min_size.block));
-                        result = try_layout(LengthOrAuto::LengthPercentage(min_size.block));
+                            .solve_for_size(AuOrAuto::LengthPercentage(min_size.block));
+                        result = try_layout(LengthOrAuto::LengthPercentage(min_size.block.into()));
                     }
 
                     content_size = result.content_size;
@@ -672,15 +678,15 @@ impl HoistedAbsolutelyPositionedBox {
 
             let pb = &pbm.padding + &pbm.border;
             let inline_start = match inline_axis.anchor {
-                Anchor::Start(start) => start + pb.inline_start + margin.inline_start,
+                Anchor::Start(start) => start + pb.inline_start.into() + margin.inline_start.into(),
                 Anchor::End(end) => {
-                    cbis - end - pb.inline_end - margin.inline_end - content_size.inline
+                    cbis - end - pb.inline_end.into() - margin.inline_end.into() - content_size.inline
                 },
             };
             let block_start = match block_axis.anchor {
-                Anchor::Start(start) => start + pb.block_start + margin.block_start,
+                Anchor::Start(start) => start + pb.block_start.into() + margin.block_start.into(),
                 Anchor::End(end) => {
-                    cbbs - end - pb.block_end - margin.block_end - content_size.block
+                    cbbs - end - pb.block_end.into() - margin.block_end.into() - content_size.block.into()
                 },
             };
 
@@ -690,6 +696,7 @@ impl HoistedAbsolutelyPositionedBox {
                     block: block_start,
                 },
                 size: content_size,
+
             };
 
             let physical_overconstrained =
@@ -699,10 +706,10 @@ impl HoistedAbsolutelyPositionedBox {
                 absolutely_positioned_box.context.base_fragment_info(),
                 absolutely_positioned_box.context.style().clone(),
                 fragments,
-                content_rect,
+                logical_rect(content_rect),
                 pbm.padding,
                 pbm.border,
-                margin,
+                margin.map(|t| -> Length { (*t).into() }),
                 None,
                 CollapsedBlockMargins::zero(),
                 physical_overconstrained,
@@ -728,15 +735,15 @@ impl HoistedAbsolutelyPositionedBox {
 }
 
 enum Anchor {
-    Start(Length),
-    End(Length),
+    Start(Au),
+    End(Au),
 }
 
 struct AxisResult {
     anchor: Anchor,
-    size: LengthOrAuto,
-    margin_start: Length,
-    margin_end: Length,
+    size: AuOrAuto,
+    margin_start: Au,
+    margin_end: Au,
 }
 
 struct AbsoluteAxisSolver<'a> {
@@ -760,25 +767,25 @@ impl<'a> AbsoluteAxisSolver<'a> {
     /// * https://drafts.csswg.org/css2/visudet.html#abs-replaced-height
     ///
     /// In the replaced case, `size` is never `Auto`.
-    fn solve_for_size(&self, computed_size: LengthOrAuto) -> AxisResult {
+    fn solve_for_size(&self, computed_size: AuOrAuto) -> AxisResult {
         match self.box_offsets {
             AbsoluteBoxOffsets::StaticStart { start } => AxisResult {
-                anchor: Anchor::Start(*start),
-                size: computed_size,
-                margin_start: self.computed_margin_start.auto_is(Length::zero),
-                margin_end: self.computed_margin_end.auto_is(Length::zero),
+                anchor: Anchor::Start((*start).into()),
+                size: computed_size.map(|t| t.into()),
+                margin_start: self.computed_margin_start.auto_is(|| Au::zero().into()).into(),
+                margin_end: self.computed_margin_end.auto_is(|| Au::zero().into()).into(),
             },
             AbsoluteBoxOffsets::Start { start } => AxisResult {
-                anchor: Anchor::Start(start.percentage_relative_to(self.containing_size)),
-                size: computed_size,
-                margin_start: self.computed_margin_start.auto_is(Length::zero),
-                margin_end: self.computed_margin_end.auto_is(Length::zero),
+                anchor: Anchor::Start(start.percentage_relative_to(self.containing_size).into()),
+                size: computed_size.map(|t| t.into()),
+                margin_start: self.computed_margin_start.auto_is(|| Au::zero().into()).into(),
+                margin_end: self.computed_margin_end.auto_is(|| Au::zero().into()).into(),
             },
             AbsoluteBoxOffsets::End { end } => AxisResult {
-                anchor: Anchor::End(end.percentage_relative_to(self.containing_size)),
+                anchor: Anchor::End(end.percentage_relative_to(self.containing_size).into()),
                 size: computed_size,
-                margin_start: self.computed_margin_start.auto_is(Length::zero),
-                margin_end: self.computed_margin_end.auto_is(Length::zero),
+                margin_start: self.computed_margin_start.auto_is(|| Au::zero().into()).into(),
+                margin_end: self.computed_margin_end.auto_is(|| Au::zero().into()).into(),
             },
             AbsoluteBoxOffsets::Both { start, end } => {
                 let start = start.percentage_relative_to(self.containing_size);
@@ -787,9 +794,9 @@ impl<'a> AbsoluteAxisSolver<'a> {
                 let margin_start;
                 let margin_end;
                 let used_size;
-                if let LengthOrAuto::LengthPercentage(s) = computed_size {
+                if let AuOrAuto::LengthPercentage(s) = computed_size {
                     used_size = s;
-                    let margins = self.containing_size - start - end - self.padding_border_sum - s;
+                    let margins = self.containing_size - start - end - self.padding_border_sum - s.into();
                     match (self.computed_margin_start, self.computed_margin_end) {
                         (LengthOrAuto::Auto, LengthOrAuto::Auto) => {
                             if self.avoid_negative_margin_start && margins < Length::zero() {
@@ -822,24 +829,24 @@ impl<'a> AbsoluteAxisSolver<'a> {
 
                     // This may be negative, but the caller will later effectively
                     // clamp it to ‘min-inline-size’ or ‘min-block-size’.
-                    used_size = self.containing_size -
+                    used_size = (self.containing_size -
                         start -
                         end -
                         self.padding_border_sum -
                         margin_start -
-                        margin_end;
+                        margin_end).into();
                 };
                 AxisResult {
-                    anchor: Anchor::Start(start),
-                    size: LengthOrAuto::LengthPercentage(used_size),
-                    margin_start,
-                    margin_end,
+                    anchor: Anchor::Start(start.into()),
+                    size: AuOrAuto::LengthPercentage(used_size),
+                    margin_start: margin_start.into(),
+                    margin_end: margin_end.into(),
                 }
             },
         }
     }
 
-    fn is_overconstrained_for_size(&self, computed_size: LengthOrAuto) -> bool {
+    fn is_overconstrained_for_size(&self, computed_size: AuOrAuto) -> bool {
         !computed_size.is_auto() &&
             self.box_offsets.both_specified() &&
             !self.computed_margin_start.is_auto() &&
@@ -882,5 +889,28 @@ pub(crate) fn relative_adjustement(
     LogicalVec2 {
         inline: adjust(box_offsets.inline_start, box_offsets.inline_end),
         block: adjust(box_offsets.block_start, box_offsets.block_end),
+    }
+}
+
+fn logical_rect(computed_rect: LogicalRect<Au>) -> LogicalRect<CSSPixelLength> {
+    let start = LogicalVec2 {
+        inline: computed_rect.start_corner.inline.into(),
+        block: computed_rect.start_corner.block.into(),
+    };
+    let size = LogicalVec2 {
+        inline: computed_rect.size.inline.into(),
+        block: computed_rect.size.block.into(),
+    };
+
+    LogicalRect {
+        start_corner: start,
+        size,
+    }
+}
+
+fn computed_size(size: LogicalVec2<Au>) -> LogicalVec2<CSSPixelLength> {
+    LogicalVec2 {
+        inline: size.inline.into(),
+        block: size.block.into(),
     }
 }
