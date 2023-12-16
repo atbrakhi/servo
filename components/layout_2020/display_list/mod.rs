@@ -618,10 +618,10 @@ impl<'a> BuilderForBoxFragment<'a> {
                     };
 
                     // FIXME: https://drafts.csswg.org/css-images-4/#the-image-resolution
-                    let dppx = 1.0;
+                    let dppx = 1;
                     let intrinsic = IntrinsicSizes::from_width_and_height(
-                        width as f32 / dppx,
-                        height as f32 / dppx,
+                        (width / dppx) as i32,
+                        (height / dppx) as i32,
                     );
 
                     if let Some(layer) =
