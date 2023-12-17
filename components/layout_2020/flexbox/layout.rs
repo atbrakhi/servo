@@ -455,12 +455,12 @@ impl<'a> FlexItem<'a> {
                                 .inline_size_over_block_size_intrinsic_ratio(box_style),
                             content_box_size.block,
                         ) {
-                            (Some(ratio), LengthOrAuto::LengthPercentage(block_size)) => {
-                                let block_size = block_size.clamp_between_extremums(
-                                    min_size.block.auto_is(|| Length::zero()),
-                                    max_size.block,
+                            (Some(ratio), AuOrAuto::LengthPercentage(block_size)) => {
+                                let block_size = block_size.clamp(
+                                    min_size.block.auto_is(|| Au::zero()),
+                                    max_size.block.unwrap(),
                                 );
-                                Some(block_size * ratio)
+                                Some(block_size * ratio.ceil_to_px())
                             },
                             _ => None,
                         }
@@ -478,8 +478,8 @@ impl<'a> FlexItem<'a> {
                             .inline_size_over_block_size_intrinsic_ratio(box_style)
                         {
                             inline_content_size.clamp_between_extremums(
-                                min_size.block.auto_is(|| Length::zero()) * ratio,
-                                max_size.block.map(|l| l * ratio),
+                                (min_size.block.auto_is(|| Au::zero()) * ratio.ceil_to_px()).into(),
+                                max_size.block.map(|l| l * ratio.ceil_to_px()).map(|t| t.into()),
                             )
                         } else {
                             inline_content_size
@@ -488,25 +488,25 @@ impl<'a> FlexItem<'a> {
                 };
 
                 let result = match specified_size_suggestion {
-                    LengthOrAuto::LengthPercentage(l) => l.min(content_size_suggestion),
-                    LengthOrAuto::Auto => {
+                    AuOrAuto::LengthPercentage(l) => l.min(content_size_suggestion.into()),
+                    AuOrAuto::Auto => {
                         if let Some(l) = transferred_size_suggestion {
-                            l.min(content_size_suggestion)
+                            l.min(content_size_suggestion.into())
                         } else {
-                            content_size_suggestion
+                            content_size_suggestion.into()
                         }
                     },
                 };
-                result.clamp_below_max(max_size.inline)
+                result.min(max_size.inline.unwrap()).into()
             } else {
                 // FIXME(stshine): Implement this when main axis is item's block axis.
-                Length::zero()
+                Au::zero().into()
             }
         };
 
         let min_size = LogicalVec2 {
-            inline: min_size.inline.auto_is(automatic_min_size),
-            block: min_size.block.auto_is(|| Length::zero()),
+            inline: min_size.inline.auto_is(automatic_min_size.into()),
+            block: min_size.block.auto_is(|| Au::zero()),
         };
         let margin_auto_is_zero = pbm.margin.auto_is(Length::zero);
 
@@ -530,7 +530,7 @@ impl<'a> FlexItem<'a> {
         );
 
         let hypothetical_main_size =
-            flex_base_size.clamp_between_extremums(content_min_size.main, content_max_size.main);
+            flex_base_size.clamp_between_extremums(content_min_size.main, content_max_size.main.unwrap());
         let margin: FlexRelativeSides<AuOrAuto> = flex_context
             .sides_to_flex_relative(pbm.margin)
             .map(|v| v.map(|v| v.into()));
@@ -1068,7 +1068,7 @@ impl<'a> FlexItem<'a> {
                                 .style
                                 .content_box_size(flex_context.containing_block, &pbm)
                                 .inline,
-                            block: LengthOrAuto::LengthPercentage(size),
+                            block: AuOrAuto::LengthPercentage(size.into()),
                         });
                         let size = replaced.contents.used_size_as_if_inline_element(
                             flex_context.containing_block,
@@ -1079,7 +1079,7 @@ impl<'a> FlexItem<'a> {
                         let cross_size = flex_context.vec2_to_flex_relative(size.clone()).cross;
                         let fragments = replaced.contents.make_fragments(&replaced.style, size);
                         FlexItemLayoutResult {
-                            hypothetical_cross_size: cross_size,
+                            hypothetical_cross_size: cross_size.into(),
                             fragments,
                             positioning_context,
                         }
