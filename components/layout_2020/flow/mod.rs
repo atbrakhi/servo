@@ -755,7 +755,9 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
         (computed_min_block_size.is_definitely_zero() || computed_min_block_size.is_auto());
 
     let block_size = containing_block_for_children.block_size.auto_is(|| {
-        content_block_size.clamp_between_extremums(min_box_size.block, max_box_size.block).into()
+        content_block_size
+            .clamp_between_extremums(min_box_size.block, max_box_size.block)
+            .into()
     });
 
     if let Some(ref mut sequential_layout_state) = sequential_layout_state {
@@ -774,9 +776,7 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
         // the block direction. In that case, the ceiling for floats is effectively raised
         // as long as no floats in the overflowing content lowered it.
         sequential_layout_state.advance_block_position(
-            (block_size - content_block_size.into()) +
-                pbm.padding.block_end +
-                pbm.border.block_end,
+            (block_size - content_block_size.into()) + pbm.padding.block_end + pbm.border.block_end,
         );
 
         if !end_margin_can_collapse_with_children {
@@ -852,12 +852,10 @@ impl NonReplacedFormattingContext {
         );
 
         let block_size = containing_block_for_children.block_size.auto_is(|| {
-            layout
-                .content_block_size
-                .clamp_between_extremums(
-                    min_box_size.block.into(),
-                    max_box_size.block.map(|t| t.into()),
-                )
+            layout.content_block_size.clamp_between_extremums(
+                min_box_size.block.into(),
+                max_box_size.block.map(|t| t.into()),
+            )
         });
 
         let content_rect = LogicalRect {

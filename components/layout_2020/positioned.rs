@@ -20,7 +20,9 @@ use crate::formatting_contexts::IndependentFormattingContext;
 use crate::fragment_tree::{
     AbsoluteBoxOffsets, BoxFragment, CollapsedBlockMargins, Fragment, HoistedSharedFragment,
 };
-use crate::geom::{AuOrAuto, LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2};
+use crate::geom::{
+    AuOrAuto, LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2,
+};
 use crate::style_ext::{ComputedValuesExt, DisplayInside};
 use crate::{ContainingBlock, DefiniteContainingBlock};
 
@@ -624,8 +626,7 @@ impl HoistedAbsolutelyPositionedBox {
                             &mut positioning_context,
                             &containing_block_for_children,
                         );
-                        let block_size =
-                            size.auto_is(|| independent_layout.content_block_size);
+                        let block_size = size.auto_is(|| independent_layout.content_block_size);
                         Result {
                             content_size: LogicalVec2 {
                                 inline: inline_size,
@@ -644,8 +645,9 @@ impl HoistedAbsolutelyPositionedBox {
                     // https://drafts.csswg.org/css2/#min-max-heights (step 2)
                     if let Some(max) = max_size.block {
                         if result.content_size.block > max {
-                            block_axis = block_axis_solver
-                                .solve_for_size(AuOrAuto::LengthPercentage(max.into()).map(|t| t.into()));
+                            block_axis = block_axis_solver.solve_for_size(
+                                AuOrAuto::LengthPercentage(max.into()).map(|t| t.into()),
+                            );
                             result = try_layout(AuOrAuto::LengthPercentage(max.into()));
                         }
                     }
