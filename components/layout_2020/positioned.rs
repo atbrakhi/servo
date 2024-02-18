@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use app_units::Au;
 use rayon::iter::IntoParallelRefMutIterator;
 use rayon::prelude::{IndexedParallelIterator, ParallelIterator};
 use serde::Serialize;
@@ -19,7 +20,7 @@ use crate::formatting_contexts::IndependentFormattingContext;
 use crate::fragment_tree::{
     AbsoluteBoxOffsets, BoxFragment, CollapsedBlockMargins, Fragment, HoistedSharedFragment,
 };
-use crate::geom::{LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2};
+use crate::geom::{AuOrAuto, LengthOrAuto, LengthPercentageOrAuto, LogicalRect, LogicalSides, LogicalVec2};
 use crate::style_ext::{ComputedValuesExt, DisplayInside};
 use crate::{ContainingBlock, DefiniteContainingBlock};
 
@@ -601,7 +602,7 @@ impl HoistedAbsolutelyPositionedBox {
                     // percentages may be resolved incorrectly.
                     let mut try_layout = |size| {
                         let containing_block_for_children = ContainingBlock {
-                            inline_size,
+                            inline_size: inline_size.into(),
                             block_size: size,
                             style: &non_replaced.style,
                         };
@@ -624,17 +625,17 @@ impl HoistedAbsolutelyPositionedBox {
                             &containing_block_for_children,
                         );
                         let block_size =
-                            size.auto_is(|| independent_layout.content_block_size.into());
+                            size.auto_is(|| independent_layout.content_block_size);
                         Result {
                             content_size: LogicalVec2 {
                                 inline: inline_size,
-                                block: block_size,
+                                block: block_size.into(),
                             },
                             fragments: independent_layout.fragments,
                         }
                     };
 
-                    let mut result = try_layout(block_axis.size);
+                    let mut result = try_layout(block_axis.size.map(|t| t.into()));
 
                     // If the tentative used block size is greater than ‘max-block-size’,
                     // recalculate the block size and margins with ‘max-block-size’ as the
@@ -644,8 +645,8 @@ impl HoistedAbsolutelyPositionedBox {
                     if let Some(max) = max_size.block {
                         if result.content_size.block > max {
                             block_axis = block_axis_solver
-                                .solve_for_size(LengthOrAuto::LengthPercentage(max));
-                            result = try_layout(LengthOrAuto::LengthPercentage(max));
+                                .solve_for_size(AuOrAuto::LengthPercentage(max.into()).map(|t| t.into()));
+                            result = try_layout(AuOrAuto::LengthPercentage(max.into()));
                         }
                     }
 
@@ -657,7 +658,7 @@ impl HoistedAbsolutelyPositionedBox {
                     if result.content_size.block < min_size.block {
                         block_axis = block_axis_solver
                             .solve_for_size(LengthOrAuto::LengthPercentage(min_size.block));
-                        result = try_layout(LengthOrAuto::LengthPercentage(min_size.block));
+                        result = try_layout(AuOrAuto::LengthPercentage(min_size.block.into()));
                     }
 
                     content_size = result.content_size;
@@ -875,12 +876,12 @@ pub(crate) fn relative_adjustement(
     // positioned, the value computes to 'auto'.""
     // https://www.w3.org/TR/CSS2/visudet.html#the-height-property
     let cbis = containing_block.inline_size;
-    let cbbs = containing_block.block_size.auto_is(Length::zero);
+    let cbbs = containing_block.block_size.auto_is(Au::zero);
     let box_offsets = style
         .box_offsets(containing_block)
         .map_inline_and_block_axes(
-            |v| v.percentage_relative_to(cbis),
-            |v| v.percentage_relative_to(cbbs),
+            |v| v.percentage_relative_to(cbis.into()),
+            |v| v.percentage_relative_to(cbbs.into()),
         );
     fn adjust(start: LengthOrAuto, end: LengthOrAuto) -> Length {
         match (start, end) {

@@ -28,7 +28,7 @@ use crate::formatting_contexts::{
 use crate::fragment_tree::{
     BaseFragmentInfo, BoxFragment, CollapsedBlockMargins, CollapsedMargin, Fragment,
 };
-use crate::geom::{LogicalRect, LogicalSides, LogicalVec2};
+use crate::geom::{AuOrAuto, LogicalRect, LogicalSides, LogicalVec2};
 use crate::positioned::{AbsolutelyPositionedBox, PositioningContext, PositioningContextLength};
 use crate::replaced::ReplacedContent;
 use crate::sizing::{self, ContentSizes};
@@ -141,18 +141,20 @@ impl BlockLevelBox {
             .auto_is(|| {
                 let margin_inline_start = pbm.margin.inline_start.auto_is(Length::zero);
                 let margin_inline_end = pbm.margin.inline_end.auto_is(Length::zero);
-                containing_block.inline_size -
-                    pbm.padding_border_sums.inline.into() -
-                    margin_inline_start -
-                    margin_inline_end
+                Length::from(
+                    containing_block.inline_size -
+                        pbm.padding_border_sums.inline -
+                        margin_inline_start.into() -
+                        margin_inline_end.into(),
+                )
             })
             .clamp_between_extremums(min_inline_size, max_inline_size);
 
         // The block size is irrelevant here.
-        let block_size = LengthOrAuto::Auto;
+        let block_size = AuOrAuto::Auto;
 
         let containing_block_for_children = ContainingBlock {
-            inline_size,
+            inline_size: inline_size.into(),
             block_size,
             style,
         };
@@ -213,9 +215,7 @@ impl BlockFormattingContext {
         containing_block: &ContainingBlock,
     ) -> IndependentLayout {
         let mut sequential_layout_state = if self.contains_floats || !layout_context.use_rayon {
-            Some(SequentialLayoutState::new(
-                containing_block.inline_size.into(),
-            ))
+            Some(SequentialLayoutState::new(containing_block.inline_size))
         } else {
             None
         };
@@ -706,7 +706,7 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
                 block_start: sequential_layout_state.bfc_relative_block_position,
                 block_start_margins_not_collapsed: sequential_layout_state.current_margin,
                 inline_start,
-                inline_end: inline_start + containing_block_for_children.inline_size.into(),
+                inline_end: inline_start + containing_block_for_children.inline_size,
             };
             parent_containing_block_position_info = Some(
                 sequential_layout_state.replace_containing_block_position_info(new_cb_offsets),
@@ -755,7 +755,7 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
         (computed_min_block_size.is_definitely_zero() || computed_min_block_size.is_auto());
 
     let block_size = containing_block_for_children.block_size.auto_is(|| {
-        content_block_size.clamp_between_extremums(min_box_size.block, max_box_size.block)
+        content_block_size.clamp_between_extremums(min_box_size.block, max_box_size.block).into()
     });
 
     if let Some(ref mut sequential_layout_state) = sequential_layout_state {
@@ -774,7 +774,7 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
         // the block direction. In that case, the ceiling for floats is effectively raised
         // as long as no floats in the overflowing content lowered it.
         sequential_layout_state.advance_block_position(
-            Au::from(block_size - content_block_size) +
+            (block_size - content_block_size.into()) +
                 pbm.padding.block_end +
                 pbm.border.block_end,
         );
@@ -793,8 +793,8 @@ fn layout_in_flow_non_replaced_block_level_same_formatting_context(
             inline: pbm.padding.inline_start + pbm.border.inline_start + margin.inline_start.into(),
         },
         size: LogicalVec2 {
-            block: block_size.into(),
-            inline: containing_block_for_children.inline_size.into(),
+            block: block_size,
+            inline: containing_block_for_children.inline_size,
         },
     };
 
@@ -858,7 +858,6 @@ impl NonReplacedFormattingContext {
                     min_box_size.block.into(),
                     max_box_size.block.map(|t| t.into()),
                 )
-                .into()
         });
 
         let content_rect = LogicalRect {
@@ -869,8 +868,8 @@ impl NonReplacedFormattingContext {
                     margin.inline_start.into(),
             },
             size: LogicalVec2 {
-                block: block_size.into(),
-                inline: containing_block_for_children.inline_size.into(),
+                block: block_size,
+                inline: containing_block_for_children.inline_size,
             },
         };
 
@@ -937,8 +936,8 @@ impl NonReplacedFormattingContext {
                 layout_context,
                 positioning_context,
                 &ContainingBlock {
-                    inline_size,
-                    block_size,
+                    inline_size: inline_size.into(),
+                    block_size: block_size.map(|t| t.into()),
                     style: &self.style,
                 },
             );
@@ -1007,8 +1006,8 @@ impl NonReplacedFormattingContext {
                     layout_context,
                     positioning_context,
                     &ContainingBlock {
-                        inline_size: proposed_inline_size,
-                        block_size,
+                        inline_size: proposed_inline_size.into(),
+                        block_size: block_size.map(|t| t.into()),
                         style: &self.style,
                     },
                 );
@@ -1241,10 +1240,12 @@ fn solve_containing_block_padding_border_and_margin_for_in_flow_box<'a>(
         .auto_is(|| {
             let margin_inline_start = pbm.margin.inline_start.auto_is(Length::zero);
             let margin_inline_end = pbm.margin.inline_end.auto_is(Length::zero);
-            containing_block.inline_size -
-                pbm.padding_border_sums.inline.into() -
-                margin_inline_start -
-                margin_inline_end
+            Length::from(
+                containing_block.inline_size -
+                    pbm.padding_border_sums.inline -
+                    margin_inline_start.into() -
+                    margin_inline_end.into(),
+            )
         })
         .clamp_between_extremums(min_box_size.inline, max_box_size.inline);
 
@@ -1266,8 +1267,8 @@ fn solve_containing_block_padding_border_and_margin_for_in_flow_box<'a>(
     }
 
     let containing_block_for_children = ContainingBlock {
-        inline_size,
-        block_size,
+        inline_size: inline_size.into(),
+        block_size: block_size.map(|t| t.into()),
         style,
     };
     // https://drafts.csswg.org/css-writing-modes/#orthogonal-flows
@@ -1337,8 +1338,9 @@ fn solve_inline_margins_avoiding_floats(
         (LengthOrAuto::Auto, _) => inline_adjustment + free_space,
         _ => inline_adjustment,
     };
-    let margin_inline_end = containing_block.inline_size - inline_size - margin_inline_start;
-    (margin_inline_start, margin_inline_end)
+    let margin_inline_end =
+        containing_block.inline_size - inline_size.into() - margin_inline_start.into();
+    (margin_inline_start, margin_inline_end.into())
 }
 
 /// Resolves the margins of an in-flow block-level box in the inline axis,
@@ -1353,15 +1355,18 @@ fn solve_inline_margins_for_in_flow_block_level(
     inline_size: Length,
 ) -> (Length, Length) {
     let free_space =
-        containing_block.inline_size - pbm.padding_border_sums.inline.into() - inline_size;
+        containing_block.inline_size - pbm.padding_border_sums.inline - inline_size.into();
     let margin_inline_start = match (pbm.margin.inline_start, pbm.margin.inline_end) {
-        (LengthOrAuto::Auto, LengthOrAuto::Auto) => Length::zero().max(free_space / 2.),
+        (LengthOrAuto::Auto, LengthOrAuto::Auto) => Length::zero().max((free_space / 2).into()),
         (LengthOrAuto::Auto, LengthOrAuto::LengthPercentage(end)) => {
-            Length::zero().max(free_space - end)
+            Length::zero().max(Length::from(free_space - end.into()))
         },
         (LengthOrAuto::LengthPercentage(start), _) => start,
     };
-    (margin_inline_start, free_space - margin_inline_start)
+    (
+        margin_inline_start,
+        Length::from(free_space - margin_inline_start.into()),
+    )
 }
 
 /// Resolves the margins of an in-flow block-level box in the block axis.
