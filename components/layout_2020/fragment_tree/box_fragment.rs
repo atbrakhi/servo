@@ -9,15 +9,14 @@ use servo_arc::Arc as ServoArc;
 use style::computed_values::overflow_x::T as ComputedOverflow;
 use style::computed_values::position::T as ComputedPosition;
 use style::properties::ComputedValues;
-use style::values::computed::{CSSPixelLength, Length, LengthPercentage, LengthPercentageOrAuto};
+use style::values::computed::{ Length, LengthPercentage, LengthPercentageOrAuto};
 use style::Zero;
 
 use super::{BaseFragment, BaseFragmentInfo, CollapsedBlockMargins, Fragment};
 use crate::cell::ArcRefCell;
 use crate::formatting_contexts::Baselines;
 use crate::geom::{
-    LengthOrAuto, LogicalRect, LogicalSides, PhysicalPoint, PhysicalRect, PhysicalSides,
-    PhysicalSize,
+    AuOrAuto, LogicalRect, LogicalSides, PhysicalPoint, PhysicalRect, PhysicalSides, PhysicalSize
 };
 use crate::style_ext::ComputedValuesExt;
 
@@ -50,11 +49,11 @@ pub(crate) struct BoxFragment {
     /// From the containing block’s start corner…?
     /// This might be broken when the containing block is in a different writing mode:
     /// <https://drafts.csswg.org/css-writing-modes/#orthogonal-flows>
-    pub content_rect: LogicalRect<Length>,
+    pub content_rect: LogicalRect<Au>,
 
-    pub padding: LogicalSides<Length>,
-    pub border: LogicalSides<Length>,
-    pub margin: LogicalSides<Length>,
+    pub padding: LogicalSides<Au>,
+    pub border: LogicalSides<Au>,
+    pub margin: LogicalSides<Au>,
 
     /// When the `clear` property is not set to `none`, it may introduce clearance.
     /// Clearance is some extra spacing that is added above the top margin,
@@ -62,7 +61,7 @@ pub(crate) struct BoxFragment {
     /// The presence of clearance prevents the top margin from collapsing with
     /// earlier margins or with the bottom margin of the parent block.
     /// <https://drafts.csswg.org/css2/#clearance>
-    pub clearance: Option<Length>,
+    pub clearance: Option<Au>,
 
     /// When this [`BoxFragment`] is for content that has a baseline, this tracks
     /// the first and last baselines of that content. This is used to propagate baselines
@@ -72,7 +71,7 @@ pub(crate) struct BoxFragment {
     pub block_margins_collapsed_with_children: CollapsedBlockMargins,
 
     /// The scrollable overflow of this box fragment.
-    pub scrollable_overflow_from_children: PhysicalRect<Length>,
+    pub scrollable_overflow_from_children: PhysicalRect<Au>,
 
     /// Whether or not this box was overconstrained in the given dimension.
     overconstrained: PhysicalSize<bool>,
@@ -80,7 +79,7 @@ pub(crate) struct BoxFragment {
     /// The resolved box insets if this box is `position: sticky`. These are calculated
     /// during stacking context tree construction because they rely on the size of the
     /// scroll container.
-    pub(crate) resolved_sticky_insets: Option<PhysicalSides<LengthOrAuto>>,
+    pub(crate) resolved_sticky_insets: Option<PhysicalSides<AuOrAuto>>,
 
     #[serde(skip_serializing)]
     pub background_mode: BackgroundMode,
@@ -92,11 +91,11 @@ impl BoxFragment {
         base_fragment_info: BaseFragmentInfo,
         style: ServoArc<ComputedValues>,
         children: Vec<Fragment>,
-        content_rect: LogicalRect<Length>,
-        padding: LogicalSides<Length>,
-        border: LogicalSides<Length>,
-        margin: LogicalSides<Length>,
-        clearance: Option<Length>,
+        content_rect: LogicalRect<Au>,
+        padding: LogicalSides<Au>,
+        border: LogicalSides<Au>,
+        margin: LogicalSides<Au>,
+        clearance: Option<Au>,
         block_margins_collapsed_with_children: CollapsedBlockMargins,
     ) -> BoxFragment {
         let position = style.get_box().position;
@@ -127,11 +126,11 @@ impl BoxFragment {
         base_fragment_info: BaseFragmentInfo,
         style: ServoArc<ComputedValues>,
         children: Vec<Fragment>,
-        content_rect: LogicalRect<Length>,
-        padding: LogicalSides<Length>,
-        border: LogicalSides<Length>,
-        margin: LogicalSides<Length>,
-        clearance: Option<Length>,
+        content_rect: LogicalRect<Au>,
+        padding: LogicalSides<Au>,
+        border: LogicalSides<Au>,
+        margin: LogicalSides<Au>,
+        clearance: Option<Au>,
         block_margins_collapsed_with_children: CollapsedBlockMargins,
         overconstrained: PhysicalSize<bool>,
     ) -> BoxFragment {
@@ -170,7 +169,7 @@ impl BoxFragment {
             clearance,
             baselines,
             block_margins_collapsed_with_children,
-            scrollable_overflow_from_children,
+            scrollable_overflow_from_children: scrollable_overflow_from_children,
             overconstrained,
             resolved_sticky_insets: None,
             background_mode: BackgroundMode::Normal,
@@ -203,8 +202,8 @@ impl BoxFragment {
 
     pub fn scrollable_overflow(
         &self,
-        containing_block: &PhysicalRect<Length>,
-    ) -> PhysicalRect<Length> {
+        containing_block: &PhysicalRect<Au>,
+    ) -> PhysicalRect<Au> {
         let physical_padding_rect = self
             .padding_rect()
             .to_physical(self.style.writing_mode, containing_block);
@@ -220,11 +219,11 @@ impl BoxFragment {
         )
     }
 
-    pub fn padding_rect(&self) -> LogicalRect<Length> {
+    pub fn padding_rect(&self) -> LogicalRect<Au> {
         self.content_rect.inflate(&self.padding)
     }
 
-    pub fn border_rect(&self) -> LogicalRect<Length> {
+    pub fn border_rect(&self) -> LogicalRect<Au> {
         self.padding_rect().inflate(&self.border)
     }
 
@@ -260,8 +259,8 @@ impl BoxFragment {
 
     pub fn scrollable_overflow_for_parent(
         &self,
-        containing_block: &PhysicalRect<Length>,
-    ) -> PhysicalRect<Length> {
+        containing_block: &PhysicalRect<Au>,
+    ) -> PhysicalRect<Au> {
         let mut overflow = self
             .border_rect()
             .to_physical(self.style.writing_mode, containing_block);
@@ -293,8 +292,8 @@ impl BoxFragment {
 
     pub(crate) fn calculate_resolved_insets_if_positioned(
         &self,
-        containing_block: &PhysicalRect<CSSPixelLength>,
-    ) -> PhysicalSides<LengthOrAuto> {
+        containing_block: &PhysicalRect<Au>,
+    ) -> PhysicalSides<AuOrAuto> {
         let position = self.style.get_box().position;
         debug_assert_ne!(
             position,
@@ -311,12 +310,12 @@ impl BoxFragment {
             return resolved_sticky_insets;
         }
 
-        let convert_to_length_or_auto = |sides: PhysicalSides<Length>| {
+        let convert_to_length_or_auto = |sides: PhysicalSides<Au>| {
             PhysicalSides::new(
-                LengthOrAuto::LengthPercentage(sides.top),
-                LengthOrAuto::LengthPercentage(sides.right),
-                LengthOrAuto::LengthPercentage(sides.bottom),
-                LengthOrAuto::LengthPercentage(sides.left),
+                AuOrAuto::LengthPercentage(sides.top),
+                AuOrAuto::LengthPercentage(sides.right),
+                AuOrAuto::LengthPercentage(sides.bottom),
+                AuOrAuto::LengthPercentage(sides.left),
             )
         };
 
@@ -331,16 +330,16 @@ impl BoxFragment {
             let get_resolved_axis =
                 |start: &LengthPercentageOrAuto,
                  end: &LengthPercentageOrAuto,
-                 container_length: CSSPixelLength| {
-                    let start = start.map(|v| v.percentage_relative_to(container_length));
-                    let end = end.map(|v| v.percentage_relative_to(container_length));
+                 container_length: Au| {
+                    let start = start.map(|v| v.percentage_relative_to(container_length.into()));
+                    let end = end.map(|v| v.percentage_relative_to(container_length.into()));
                     match (start.non_auto(), end.non_auto()) {
-                        (None, None) => (Length::zero(), Length::zero()),
-                        (None, Some(end)) => (-end, end),
-                        (Some(start), None) => (start, -start),
+                        (None, None) => (Au::zero(), Au::zero()),
+                        (None, Some(end)) => (Au::from(-end), Au::from(end)),
+                        (Some(start), None) => (Au::from(start), Au::from(-start)),
                         // This is the overconstrained case, for which the resolved insets will
                         // simply be the computed insets.
-                        (Some(start), Some(end)) => (start, end),
+                        (Some(start), Some(end)) => (Au::from(start), Au::from(end)),
                     }
                 };
             let (left, right) = get_resolved_axis(&insets.left, &insets.right, cb_width);
@@ -360,21 +359,21 @@ impl BoxFragment {
 
         let (top, bottom) = if self.overconstrained.height {
             (
-                resolve(&insets.top, cb_height),
-                resolve(&insets.bottom, cb_height),
+                resolve(&insets.top, cb_height.into()),
+                resolve(&insets.bottom, cb_height.into()),
             )
         } else {
-            (content_rect.origin.y, cb_height - content_rect.max_y())
+            (content_rect.origin.y.into(), (cb_height - content_rect.max_y()).into())
         };
         let (left, right) = if self.overconstrained.width {
             (
-                resolve(&insets.left, cb_width),
-                resolve(&insets.right, cb_width),
+                resolve(&insets.left, cb_width.into()),
+                resolve(&insets.right, cb_width.into()),
             )
         } else {
-            (content_rect.origin.x, cb_width - content_rect.max_x())
+            (content_rect.origin.x.into(), (cb_width - content_rect.max_x()).into())
         };
 
-        convert_to_length_or_auto(PhysicalSides::new(top, right, bottom, left))
+        convert_to_length_or_auto(PhysicalSides::new(top.into(), right.into(), bottom.into(), left.into()))
     }
 }

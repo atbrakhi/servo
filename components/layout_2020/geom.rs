@@ -216,6 +216,19 @@ impl fmt::Debug for LogicalRect<Length> {
     }
 }
 
+impl fmt::Debug for LogicalRect<Au> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Rect(i{}×b{} @ (i{},b{}))",
+            self.size.inline.to_px(),
+            self.size.block.to_px(),
+            self.start_corner.inline.to_px(),
+            self.start_corner.block.to_px(),
+        )
+    }
+}
+
 impl<T: Clone> LogicalVec2<T> {
     pub fn to_physical(&self, mode: WritingMode) -> PhysicalSize<T> {
         // https://drafts.csswg.org/css-writing-modes/#logical-to-physical
