@@ -81,6 +81,8 @@ webgpu = { path = "../webgpu" }
 webrender = { workspace = true }
 webrender_api = { workspace = true }
 webrender_traits = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 webxr = { git = "https://github.com/servo/webxr" }
 webxr-api = { git = "https://github.com/servo/webxr" }
 
