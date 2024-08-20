@@ -693,6 +693,7 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
 
     /// Accept messages from content processes that need to be relayed to the WebRender
     /// instance in the parent process.
+    #[tracing::instrument(skip(self))]
     fn handle_webrender_message(&mut self, msg: ForwardedToCompositorMsg) {
         match msg {
             ForwardedToCompositorMsg::Layout(ScriptToCompositorMsg::SendInitialTransaction(

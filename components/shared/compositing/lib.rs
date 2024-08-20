@@ -138,11 +138,23 @@ pub struct CompositionPipeline {
 }
 
 /// Messages forwarded by the Constellation to the Compositor.
+#[derive(Debug)]
 pub enum ForwardedToCompositorMsg {
     Layout(ScriptToCompositorMsg),
     Net(NetToCompositorMsg),
     Font(FontToCompositorMsg),
     Canvas(CanvasToCompositorMsg),
+}
+
+impl Debug for ForwardedToCompositorMsg {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        match self {
+            ForwardedToCompositorMsg::Layout(_) => write!(f, "Layout(ScriptToCompositorMsg)"),
+            ForwardedToCompositorMsg::Net(_) => write!(f, "Net(NetToCompositorMsg)"),
+            ForwardedToCompositorMsg::Font(_) => write!(f, "Font(FontToCompositorMsg)"),
+            ForwardedToCompositorMsg::Canvas(_) => write!(f, "Canvas(CanvasToCompositorMsg)"),
+        }
+    }
 }
 
 impl Debug for CompositorMsg {
