@@ -8,15 +8,18 @@ use getopts::Options;
 use log::error;
 use servo::config::opts::{self, ArgumentParsingResult};
 use servo::servo_config::pref;
+use tracing_perfetto::PerfettoLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
-
+use tracing_subscriber::filter::LevelFilter;
 use crate::desktop::app::App;
 use crate::panic_hook;
 
 pub fn main() {
     crate::crash_handler::install();
+    let file = std::fs::File::create("servo.pftrace").unwrap();
+    let perfetto_layer = PerfettoLayer::new(std::sync::Mutex::new(file));
 
     // Set up a custom tracing subscriber that behaves like the default fmt
     // subscriber, but also lets us insert our own layers for things like
@@ -25,11 +28,14 @@ pub fn main() {
     // <https://docs.rs/tracing-subscriber/0.3.18/tracing_subscriber/fmt/index.html#composing-layers>
     // FIXME: our event tracing log targets are considered “invalid filter directive”
     // <https://book.servo.org/hacking/debugging.html#event-tracing>
-    let env_filter_layer = EnvFilter::from_default_env();
+    // `add_directive` is important for capturing trace events
+    let env_filter_layer = EnvFilter::from_default_env()
+    .add_directive(LevelFilter::TRACE.into());
     let fmt_layer = tracing_subscriber::fmt::layer();
     tracing_subscriber::registry()
         .with(env_filter_layer)
         .with(fmt_layer)
+        .with(perfetto_layer)
         .init();
 
     crate::resources::init();
