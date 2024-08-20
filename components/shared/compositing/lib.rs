@@ -138,7 +138,6 @@ pub struct CompositionPipeline {
 }
 
 /// Messages forwarded by the Constellation to the Compositor.
-#[derive(Debug)]
 pub enum ForwardedToCompositorMsg {
     Layout(ScriptToCompositorMsg),
     Net(NetToCompositorMsg),

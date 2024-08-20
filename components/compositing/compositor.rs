@@ -51,7 +51,7 @@ use webrender_traits::{
     NetToCompositorMsg, RenderingContext, ScriptToCompositorMsg, SerializedImageUpdate,
     UntrustedNodeAddress,
 };
-
+use tracing::{span, Level};
 use crate::gl::RenderTargetInfo;
 use crate::touch::{TouchAction, TouchHandler};
 use crate::webview::{UnknownWebView, WebView, WebViewAlreadyExists, WebViewManager};
@@ -781,6 +781,8 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
                     display_list_descriptor,
                 );
 
+                let span = span!(Level::TRACE, "ScriptToCompositorMsg::BuiltDisplayList");
+                let _enter = span.enter();
                 let pipeline_id = display_list_info.pipeline_id;
                 let details = self.pipeline_details(pipeline_id.into());
                 details.most_recent_display_list_epoch = Some(display_list_info.epoch);
