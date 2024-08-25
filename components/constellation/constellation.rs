@@ -1343,7 +1343,7 @@ where
             FromCompositorMsg::GetBrowsingContext(pipeline_id, response_sender) => {
                 self.handle_get_browsing_context(pipeline_id, response_sender);
             },
-            FromCompositorMsg::GetPipeline(browsing_context_id, response_sender ) => {
+            FromCompositorMsg::GetPipeline(browsing_context_id, response_sender) => {
                 self.handle_get_pipeline(browsing_context_id, response_sender);
             },
             FromCompositorMsg::GetFocusTopLevelBrowsingContext(resp_chan) => {

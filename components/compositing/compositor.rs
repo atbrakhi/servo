@@ -34,6 +34,7 @@ use script_traits::{
 };
 use servo_geometry::{DeviceIndependentPixel, FramebufferUintLength};
 use style_traits::{CSSPixel, DevicePixel, PinchZoomFactor};
+use tracing::{span, Level};
 use webrender::{CaptureBits, RenderApi, Transaction};
 use webrender_api::units::{
     DeviceIntPoint, DeviceIntSize, DevicePoint, DeviceRect, LayoutPoint, LayoutRect, LayoutSize,
@@ -51,7 +52,7 @@ use webrender_traits::{
     NetToCompositorMsg, RenderingContext, ScriptToCompositorMsg, SerializedImageUpdate,
     UntrustedNodeAddress,
 };
-use tracing::{span, Level};
+
 use crate::gl::RenderTargetInfo;
 use crate::touch::{TouchAction, TouchHandler};
 use crate::webview::{UnknownWebView, WebView, WebViewAlreadyExists, WebViewManager};
@@ -2069,6 +2070,7 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
     /// Returns Ok if composition was performed or Err if it was not possible to composite for some
     /// reason. When the target is [CompositeTarget::SharedMemory], the image is read back from the
     /// GPU and returned as Ok(Some(png::Image)), otherwise we return Ok(None).
+    #[tracing::instrument(skip(self))]
     fn composite_specific_target(
         &mut self,
         target: CompositeTarget,
@@ -2284,6 +2286,8 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
             },
         };
 
+        let span = span!(Level::TRACE, "ConstellationMsg::ReadyToPresent");
+        let _enter = span.enter();
         // Notify embedder that servo is ready to present.
         // Embedder should call `present` to tell compositor to continue rendering.
         self.waiting_on_present = true;
@@ -2308,7 +2312,10 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
             .map(|info| info.framebuffer_id())
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn present(&mut self) {
+        let span = span!(Level::TRACE, "Compositor Present Surface");
+        let _enter = span.enter();
         if let Err(err) = self.rendering_context.present() {
             warn!("Failed to present surface: {:?}", err);
         }
@@ -2370,6 +2377,7 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
         );
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn receive_messages(&mut self) -> bool {
         // Check for new messages coming from the other threads in the system.
         let mut compositor_messages = vec![];
@@ -2396,6 +2404,7 @@ impl<Window: WindowMethods + ?Sized> IOCompositor<Window> {
         true
     }
 
+    #[tracing::instrument(skip(self))]
     pub fn perform_updates(&mut self) -> bool {
         if self.shutdown_state == ShutdownState::FinishedShuttingDown {
             return false;

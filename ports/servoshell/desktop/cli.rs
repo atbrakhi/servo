@@ -9,10 +9,11 @@ use log::error;
 use servo::config::opts::{self, ArgumentParsingResult};
 use servo::servo_config::pref;
 use tracing_perfetto::PerfettoLayer;
+use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
-use tracing_subscriber::filter::LevelFilter;
+
 use crate::desktop::app::App;
 use crate::panic_hook;
 
@@ -29,8 +30,7 @@ pub fn main() {
     // FIXME: our event tracing log targets are considered “invalid filter directive”
     // <https://book.servo.org/hacking/debugging.html#event-tracing>
     // `add_directive` is important for capturing trace events
-    let env_filter_layer = EnvFilter::from_default_env()
-    .add_directive(LevelFilter::TRACE.into());
+    let env_filter_layer = EnvFilter::from_default_env().add_directive(LevelFilter::TRACE.into());
     let fmt_layer = tracing_subscriber::fmt::layer();
     tracing_subscriber::registry()
         .with(env_filter_layer)
