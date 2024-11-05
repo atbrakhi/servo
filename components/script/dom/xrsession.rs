@@ -300,6 +300,7 @@ impl XRSession {
         );
     }
 
+    #[cfg(feature = "webxr")]
     fn event_callback(&self, event: XREvent) {
         match event {
             XREvent::SessionEnd => {
@@ -925,6 +926,7 @@ impl XRSessionMethods for XRSession {
         // happen ASAP for end() but can happen later if the device
         // shuts itself down
         self.ended.set(true);
+
         global.as_window().Navigator().Xr().end_session(self);
         self.session.borrow_mut().end_session();
         // Disconnect any still-attached XRInputSources
@@ -1090,14 +1092,17 @@ impl XRSessionMethods for XRSession {
     }
 }
 
+#[cfg(feature = "webxr")]
 // The pose of an object in native-space. Should never be exposed.
 pub type ApiPose = RigidTransform3D<f32, ApiSpace, webxr_api::Native>;
 // A transform between objects in some API-space
+#[cfg(feature = "webxr")]
 pub type ApiRigidTransform = RigidTransform3D<f32, ApiSpace, ApiSpace>;
 
 #[derive(Clone, Copy)]
 pub struct BaseSpace;
 
+#[cfg(feature = "webxr")]
 pub type BaseTransform = RigidTransform3D<f32, webxr_api::Native, BaseSpace>;
 
 #[allow(unsafe_code)]

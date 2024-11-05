@@ -2513,6 +2513,7 @@ impl Window {
         self.webrender_document
     }
 
+    #[cfg(feature = "webxr")]
     pub fn in_immersive_xr_session(&self) -> bool {
         self.navigator
             .get()

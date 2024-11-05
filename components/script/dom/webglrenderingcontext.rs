@@ -542,6 +542,7 @@ impl WebGLRenderingContext {
 
         // Dirtying the canvas is unnecessary if we're actively displaying immersive
         // XR content right now.
+        #[cfg(feature = "webxr")]
         if self.global().as_window().in_immersive_xr_session() {
             return;
         }

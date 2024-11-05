@@ -19,7 +19,9 @@ use crate::dom::gamepad::Gamepad;
 use crate::dom::globalscope::GlobalScope;
 #[cfg(feature = "webxr")]
 use crate::dom::xrhand::XRHand;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
 use crate::realms::enter_realm;
 use crate::script_runtime::JSContext;
@@ -98,6 +100,7 @@ impl XRInputSource {
         self.info.id
     }
 
+    #[cfg(feature = "webxr")]
     pub fn session(&self) -> &XRSession {
         &self.session
     }

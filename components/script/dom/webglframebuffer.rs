@@ -23,6 +23,7 @@ use crate::dom::webglobject::WebGLObject;
 use crate::dom::webglrenderbuffer::WebGLRenderbuffer;
 use crate::dom::webglrenderingcontext::{Operation, WebGLRenderingContext};
 use crate::dom::webgltexture::WebGLTexture;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 
 pub enum CompleteForRendering {
