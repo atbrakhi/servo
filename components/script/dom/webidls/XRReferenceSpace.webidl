@@ -4,6 +4,7 @@
 
 // https://immersive-web.github.io/webxr/#xrreferencespace-interface
 
+
 enum XRReferenceSpaceType {
   "viewer",
   "local",
@@ -13,6 +14,7 @@ enum XRReferenceSpaceType {
 };
 
 [SecureContext, Exposed=Window, Pref="dom.webxr.enabled"]
+
 interface XRReferenceSpace : XRSpace {
   [NewObject] XRReferenceSpace getOffsetReferenceSpace(XRRigidTransform originOffset);
 

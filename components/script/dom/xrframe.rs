@@ -7,6 +7,7 @@ use std::cell::Cell;
 use dom_struct::dom_struct;
 use js::gc::CustomAutoRooterGuard;
 use js::typedarray::Float32Array;
+#[cfg(feature = "webxr")]
 use webxr_api::{Frame, LayerId, SubImages};
 
 use crate::dom::bindings::codegen::Bindings::XRFrameBinding::XRFrameMethods;
@@ -26,6 +27,7 @@ use crate::dom::xrsession::{ApiPose, XRSession};
 use crate::dom::xrspace::XRSpace;
 use crate::dom::xrviewerpose::XRViewerPose;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRFrame {
     reflector_: Reflector,
@@ -37,6 +39,7 @@ pub struct XRFrame {
     animation_frame: Cell<bool>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRFrame {
     fn new_inherited(session: &XRSession, data: Frame) -> XRFrame {
         XRFrame {
@@ -74,6 +77,7 @@ impl XRFrame {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRFrameMethods for XRFrame {
     /// <https://immersive-web.github.io/webxr/#dom-xrframe-session>
     fn Session(&self) -> DomRoot<XRSession> {

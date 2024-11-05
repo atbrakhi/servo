@@ -5,6 +5,7 @@
 // TODO: Implement the layer types
 // https://github.com/servo/servo/issues/27493
 
+
 // https://immersive-web.github.io/layers/#xrcompositionlayer
 [SecureContext, Exposed=Window, Pref="dom.webxr.layers.enabled"]
 interface XRCompositionLayer : XRLayer {

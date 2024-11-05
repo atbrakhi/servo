@@ -10,6 +10,7 @@ use js::rust::HandleObject;
 use servo_atoms::Atom;
 
 use crate::dom::bindings::codegen::Bindings::EventBinding::Event_Binding::EventMethods;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRInputSourcesChangeEventBinding::{
     self, XRInputSourcesChangeEventMethods,
 };
@@ -20,11 +21,14 @@ use crate::dom::bindings::str::DOMString;
 use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 use crate::realms::enter_realm;
 use crate::script_runtime::{CanGc, JSContext};
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRInputSourcesChangeEvent {
     event: Event,
@@ -35,6 +39,7 @@ pub struct XRInputSourcesChangeEvent {
     removed: Heap<JSVal>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourcesChangeEvent {
     #[allow(crown::unrooted_must_root)]
     fn new_inherited(session: &XRSession) -> XRInputSourcesChangeEvent {
@@ -127,6 +132,7 @@ impl XRInputSourcesChangeEvent {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourcesChangeEventMethods for XRInputSourcesChangeEvent {
     // https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeevent-session
     fn Session(&self) -> DomRoot<XRSession> {

@@ -6,6 +6,7 @@
 // https://github.com/servo/servo/issues/27493
 
 // https://immersive-web.github.io/layers/#xrequirectlayer
+
 [SecureContext, Exposed=Window, Pref="dom.webxr.layers.enabled"]
 interface XREquirectLayer : XRCompositionLayer {
 //   attribute XRSpace space;

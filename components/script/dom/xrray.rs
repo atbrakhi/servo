@@ -6,6 +6,7 @@ use dom_struct::dom_struct;
 use euclid::{Angle, RigidTransform3D, Rotation3D, Vector3D};
 use js::rust::HandleObject;
 use js::typedarray::{Float32, Float32Array};
+#[cfg(feature = "webxr")]
 use webxr_api::{ApiSpace, Ray};
 
 use super::bindings::buffer_source::HeapBufferSource;
@@ -17,9 +18,11 @@ use crate::dom::bindings::root::DomRoot;
 use crate::dom::dompointreadonly::DOMPointReadOnly;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
 use crate::script_runtime::{CanGc, JSContext};
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRRay {
     reflector_: Reflector,
@@ -30,6 +33,7 @@ pub struct XRRay {
     matrix: HeapBufferSource<Float32>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRRay {
     fn new_inherited(ray: Ray<ApiSpace>) -> XRRay {
         XRRay {
@@ -112,6 +116,7 @@ impl XRRay {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRRayMethods for XRRay {
     /// <https://immersive-web.github.io/hit-test/#dom-xrray-origin>
     fn Origin(&self) -> DomRoot<DOMPointReadOnly> {

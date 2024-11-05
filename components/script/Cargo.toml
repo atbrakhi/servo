@@ -19,6 +19,7 @@ profilemozjs = ['js/profilemozjs']
 webgl_backtrace = ["canvas_traits/webgl_backtrace"]
 js_backtrace = []
 refcell_backtrace = ["accountable-refcell"]
+webxr = ["dep:webxr-api"]
 
 [build-dependencies]
 phf_codegen = "0.11"
@@ -115,7 +116,7 @@ webdriver = { workspace = true }
 webgpu = { path = "../webgpu" }
 webrender_api = { workspace = true }
 webrender_traits = { workspace = true }
-webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
+webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"], optional = true }
 xml5ever = { workspace = true }
 
 [target.'cfg(not(target_os = "ios"))'.dependencies]

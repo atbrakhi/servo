@@ -8,6 +8,7 @@ use canvas_traits::webgl::{WebGLCommand, WebGLContextId, WebGLTextureId};
 use dom_struct::dom_struct;
 use euclid::{Rect, Size2D};
 use js::rust::HandleObject;
+#[cfg(feature = "webxr")]
 use webxr_api::{ContextId as WebXRContextId, LayerId, LayerInit, Viewport};
 
 use crate::dom::bindings::codegen::Bindings::WebGL2RenderingContextBinding::WebGL2RenderingContextConstants as constants;
@@ -27,13 +28,19 @@ use crate::dom::webglobject::WebGLObject;
 use crate::dom::webglrenderingcontext::WebGLRenderingContext;
 use crate::dom::webgltexture::WebGLTexture;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrlayer::XRLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
+#[cfg(feature = "webxr")]
 use crate::dom::xrview::XRView;
+#[cfg(feature = "webxr")]
 use crate::dom::xrviewport::XRViewport;
 use crate::script_runtime::CanGc;
 
+#[cfg(feature = "webxr")]
 impl<'a> From<&'a XRWebGLLayerInit> for LayerInit {
     fn from(init: &'a XRWebGLLayerInit) -> LayerInit {
         LayerInit::WebGLLayer {
@@ -47,6 +54,7 @@ impl<'a> From<&'a XRWebGLLayerInit> for LayerInit {
     }
 }
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRWebGLLayer {
     xr_layer: XRLayer,
@@ -59,6 +67,7 @@ pub struct XRWebGLLayer {
     framebuffer: Option<Dom<WebGLFramebuffer>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRWebGLLayer {
     pub fn new_inherited(
         session: &XRSession,
@@ -304,6 +313,7 @@ impl XRWebGLLayer {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRWebGLLayerMethods for XRWebGLLayer {
     /// <https://immersive-web.github.io/webxr/#dom-xrwebgllayer-antialias>
     fn Antialias(&self) -> bool {

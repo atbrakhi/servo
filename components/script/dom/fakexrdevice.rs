@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
-
 use std::cell::Cell;
 use std::rc::Rc;
 
@@ -10,31 +9,39 @@ use euclid::{Point2D, Point3D, Rect, RigidTransform3D, Rotation3D, Size2D, Trans
 use ipc_channel::ipc::IpcSender;
 use ipc_channel::router::ROUTER;
 use profile_traits::ipc;
+#[cfg(feature = "webxr")]
 use webxr_api::{
     EntityType, Handedness, InputId, InputSource, MockDeviceMsg, MockInputInit, MockRegion,
     MockViewInit, MockViewsInit, MockWorld, TargetRayMode, Triangle, Visibility,
 };
 
 use crate::dom::bindings::codegen::Bindings::DOMPointBinding::DOMPointInit;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::FakeXRDeviceBinding::{
     FakeXRBoundsPoint, FakeXRDeviceMethods, FakeXRRegionType, FakeXRRigidTransformInit,
     FakeXRViewInit, FakeXRWorldInit,
 };
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::FakeXRInputControllerBinding::FakeXRInputSourceInit;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRInputSourceBinding::{
     XRHandedness, XRTargetRayMode,
 };
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRSessionBinding::XRVisibilityState;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRViewBinding::XREye;
 use crate::dom::bindings::error::{Error, Fallible};
 use crate::dom::bindings::refcounted::TrustedPromise;
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::DomRoot;
+#[cfg(feature = "webxr")]
 use crate::dom::fakexrinputcontroller::{init_to_mock_buttons, FakeXRInputController};
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::promise::Promise;
 use crate::task_source::TaskSource;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct FakeXRDevice {
     reflector: Reflector,
@@ -46,6 +53,7 @@ pub struct FakeXRDevice {
     next_input_id: Cell<InputId>,
 }
 
+#[cfg(feature = "webxr")]
 impl FakeXRDevice {
     pub fn new_inherited(sender: IpcSender<MockDeviceMsg>) -> FakeXRDevice {
         FakeXRDevice {
@@ -64,6 +72,7 @@ impl FakeXRDevice {
     }
 }
 
+#[cfg(feature = "webxr")]
 pub fn view<Eye>(view: &FakeXRViewInit) -> Fallible<MockViewInit<Eye>> {
     if view.projectionMatrix.len() != 16 || view.viewOffset.position.len() != 3 {
         return Err(Error::Type("Incorrectly sized array".into()));
@@ -101,6 +110,7 @@ pub fn view<Eye>(view: &FakeXRViewInit) -> Fallible<MockViewInit<Eye>> {
     })
 }
 
+#[cfg(feature = "webxr")]
 pub fn get_views(views: &[FakeXRViewInit]) -> Fallible<MockViewsInit> {
     match views.len() {
         1 => Ok(MockViewsInit::Mono(view(&views[0])?)),
@@ -116,6 +126,7 @@ pub fn get_views(views: &[FakeXRViewInit]) -> Fallible<MockViewsInit> {
     }
 }
 
+#[cfg(feature = "webxr")]
 pub fn get_origin<T, U>(
     origin: &FakeXRRigidTransformInit,
 ) -> Fallible<RigidTransform3D<f32, T, U>> {
@@ -141,6 +152,7 @@ pub fn get_point<T>(pt: &DOMPointInit) -> Point3D<f32, T> {
     Point3D::new(pt.x / pt.w, pt.y / pt.w, pt.z / pt.w).cast()
 }
 
+#[cfg(feature = "webxr")]
 pub fn get_world(world: &FakeXRWorldInit) -> Fallible<MockWorld> {
     let regions = world
         .hitTestRegions
@@ -171,6 +183,7 @@ pub fn get_world(world: &FakeXRWorldInit) -> Fallible<MockWorld> {
     Ok(MockWorld { regions })
 }
 
+#[cfg(feature = "webxr")]
 impl From<FakeXRRegionType> for EntityType {
     fn from(x: FakeXRRegionType) -> Self {
         match x {
@@ -181,6 +194,7 @@ impl From<FakeXRRegionType> for EntityType {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl FakeXRDeviceMethods for FakeXRDevice {
     /// <https://github.com/immersive-web/webxr-test-api/blob/master/explainer.md>
     fn SetViews(
@@ -344,6 +358,7 @@ impl FakeXRDeviceMethods for FakeXRDevice {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl From<XRHandedness> for Handedness {
     fn from(h: XRHandedness) -> Self {
         match h {
@@ -354,6 +369,7 @@ impl From<XRHandedness> for Handedness {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl From<XRTargetRayMode> for TargetRayMode {
     fn from(t: XRTargetRayMode) -> Self {
         match t {

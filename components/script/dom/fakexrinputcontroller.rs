@@ -4,6 +4,7 @@
 
 use dom_struct::dom_struct;
 use ipc_channel::ipc::IpcSender;
+#[cfg(feature = "webxr")]
 use webxr_api::{
     Handedness, InputId, MockButton, MockButtonType, MockDeviceMsg, MockInputMsg, SelectEvent,
     SelectKind, TargetRayMode,
@@ -20,9 +21,11 @@ use crate::dom::bindings::error::{Error, Fallible};
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::DomRoot;
 use crate::dom::bindings::str::DOMString;
+#[cfg(feature = "webxr")]
 use crate::dom::fakexrdevice::get_origin;
 use crate::dom::globalscope::GlobalScope;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct FakeXRInputController {
     reflector: Reflector,
@@ -34,6 +37,7 @@ pub struct FakeXRInputController {
     id: InputId,
 }
 
+#[cfg(feature = "webxr")]
 impl FakeXRInputController {
     pub fn new_inherited(sender: IpcSender<MockDeviceMsg>, id: InputId) -> FakeXRInputController {
         FakeXRInputController {
@@ -61,6 +65,7 @@ impl FakeXRInputController {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl FakeXRInputControllerMethods for FakeXRInputController {
     /// <https://immersive-web.github.io/webxr-test-api/#dom-fakexrinputcontroller-setpointerorigin>
     fn SetPointerOrigin(&self, origin: &FakeXRRigidTransformInit, _emulated: bool) -> Fallible<()> {
@@ -165,6 +170,7 @@ impl FakeXRInputControllerMethods for FakeXRInputController {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl From<FakeXRButtonType> for MockButtonType {
     fn from(b: FakeXRButtonType) -> Self {
         match b {
@@ -178,6 +184,7 @@ impl From<FakeXRButtonType> for MockButtonType {
 }
 
 /// <https://immersive-web.github.io/webxr-test-api/#parse-supported-buttons>
+#[cfg(feature = "webxr")]
 pub fn init_to_mock_buttons(buttons: &[FakeXRButtonStateInit]) -> Vec<MockButton> {
     let supported: Vec<MockButton> = buttons
         .iter()

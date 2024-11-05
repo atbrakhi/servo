@@ -4,16 +4,21 @@
 
 use canvas_traits::webgl::WebGLContextId;
 use dom_struct::dom_struct;
+#[cfg(feature = "webxr")]
 use webxr_api::LayerId;
 
 use crate::dom::bindings::inheritance::Castable;
 use crate::dom::bindings::root::Dom;
 use crate::dom::eventtarget::EventTarget;
 use crate::dom::webglrenderingcontext::WebGLRenderingContext;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
+#[cfg(feature = "webxr")]
 use crate::dom::xrwebgllayer::XRWebGLLayer;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRLayer {
     event_target: EventTarget,
@@ -26,6 +31,7 @@ pub struct XRLayer {
     layer_id: Option<LayerId>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRLayer {
     #[allow(dead_code)]
     pub fn new_inherited(

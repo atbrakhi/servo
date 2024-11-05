@@ -17,12 +17,14 @@ use crate::dom::xrrigidtransform::XRRigidTransform;
 use crate::dom::xrsession::XRSession;
 use crate::script_runtime::JSContext;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRBoundedReferenceSpace {
     reference_space: XRReferenceSpace,
     offset: Dom<XRRigidTransform>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRBoundedReferenceSpace {
     pub fn new_inherited(
         session: &XRSession,
@@ -61,6 +63,7 @@ impl XRBoundedReferenceSpace {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRBoundedReferenceSpaceMethods for XRBoundedReferenceSpace {
     /// <https://www.w3.org/TR/webxr/#dom-xrboundedreferencespace-boundsgeometry>
     fn BoundsGeometry(&self, cx: JSContext) -> JSVal {

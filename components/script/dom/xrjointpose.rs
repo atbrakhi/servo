@@ -9,16 +9,21 @@ use crate::dom::bindings::num::Finite;
 use crate::dom::bindings::reflector::reflect_dom_object;
 use crate::dom::bindings::root::DomRoot;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrpose::XRPose;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::ApiRigidTransform;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRJointPose {
     pose: XRPose,
     radius: Option<f32>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRJointPose {
     fn new_inherited(transform: &XRRigidTransform, radius: Option<f32>) -> XRJointPose {
         XRJointPose {
@@ -41,6 +46,7 @@ impl XRJointPose {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRJointPoseMethods for XRJointPose {
     /// <https://immersive-web.github.io/webxr/#dom-XRJointPose-views>
     fn GetRadius(&self) -> Option<Finite<f32>> {

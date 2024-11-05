@@ -18,10 +18,13 @@ use crate::dom::bindings::str::DOMString;
 use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrreferencespace::XRReferenceSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
 use crate::script_runtime::CanGc;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRReferenceSpaceEvent {
     event: Event,
@@ -29,6 +32,7 @@ pub struct XRReferenceSpaceEvent {
     transform: Option<Dom<XRRigidTransform>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRReferenceSpaceEvent {
     #[allow(crown::unrooted_must_root)]
     fn new_inherited(
@@ -106,6 +110,7 @@ impl XRReferenceSpaceEvent {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRReferenceSpaceEventMethods for XRReferenceSpaceEvent {
     /// <https://www.w3.org/TR/webxr/#dom-xrreferencespaceeventinit-session>
     fn ReferenceSpace(&self) -> DomRoot<XRReferenceSpace> {

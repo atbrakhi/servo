@@ -3,5 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // https://immersive-web.github.io/webxr/#xrlayer
+
 [SecureContext, Exposed=Window, Pref="dom.webxr.enabled"]
 interface XRLayer : EventTarget {};

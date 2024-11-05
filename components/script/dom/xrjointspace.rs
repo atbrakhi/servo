@@ -4,6 +4,7 @@
 
 use dom_struct::dom_struct;
 use euclid::RigidTransform3D;
+#[cfg(feature = "webxr")]
 use webxr_api::{BaseSpace, Frame, InputId, Joint, JointFrame, Space};
 
 use crate::dom::bindings::codegen::Bindings::XRHandBinding::XRHandJoint;
@@ -11,9 +12,12 @@ use crate::dom::bindings::codegen::Bindings::XRJointSpaceBinding::XRJointSpaceMe
 use crate::dom::bindings::reflector::reflect_dom_object;
 use crate::dom::bindings::root::DomRoot;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{ApiPose, XRSession};
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRJointSpace {
     xrspace: XRSpace,
@@ -26,6 +30,7 @@ pub struct XRJointSpace {
     hand_joint: XRHandJoint,
 }
 
+#[cfg(feature = "webxr")]
 impl XRJointSpace {
     pub fn new_inherited(
         session: &XRSession,
@@ -75,6 +80,7 @@ impl XRJointSpace {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRJointSpaceMethods for XRJointSpace {
     /// <https://www.w3.org/TR/webxr-hand-input-1/#xrjointspace-jointname>
     fn JointName(&self) -> XRHandJoint {

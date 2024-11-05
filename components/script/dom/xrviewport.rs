@@ -4,13 +4,15 @@
 
 use dom_struct::dom_struct;
 use euclid::Rect;
+#[cfg(feature = "webxr")]
 use webxr_api::Viewport;
-
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRViewportBinding::XRViewportMethods;
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::DomRoot;
 use crate::dom::globalscope::GlobalScope;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRViewport {
     reflector_: Reflector,
@@ -18,6 +20,7 @@ pub struct XRViewport {
     viewport: Rect<i32, Viewport>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRViewport {
     fn new_inherited(viewport: Rect<i32, Viewport>) -> XRViewport {
         XRViewport {
@@ -31,6 +34,7 @@ impl XRViewport {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRViewportMethods for XRViewport {
     /// <https://immersive-web.github.io/webxr/#dom-xrviewport-x>
     fn X(&self) -> i32 {

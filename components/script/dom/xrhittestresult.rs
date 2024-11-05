@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
+#[cfg(feature = "webxr")]
 use webxr_api::HitTestResult;
 
 use crate::dom::bindings::codegen::Bindings::XRHitTestResultBinding::XRHitTestResultMethods;
@@ -13,6 +14,7 @@ use crate::dom::xrframe::XRFrame;
 use crate::dom::xrpose::XRPose;
 use crate::dom::xrspace::XRSpace;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRHitTestResult {
     reflector_: Reflector,
@@ -22,6 +24,7 @@ pub struct XRHitTestResult {
     frame: Dom<XRFrame>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRHitTestResult {
     fn new_inherited(result: HitTestResult, frame: &XRFrame) -> XRHitTestResult {
         XRHitTestResult {
@@ -43,6 +46,7 @@ impl XRHitTestResult {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRHitTestResultMethods for XRHitTestResult {
     // https://immersive-web.github.io/hit-test/#dom-xrhittestresult-getpose
     fn GetPose(&self, base: &XRSpace) -> Option<DomRoot<XRPose>> {

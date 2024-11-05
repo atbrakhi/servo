@@ -16,15 +16,18 @@ use crate::dom::bindings::str::DOMString;
 use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 use crate::script_runtime::CanGc;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRSessionEvent {
     event: Event,
     session: Dom<XRSession>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRSessionEvent {
     #[allow(crown::unrooted_must_root)]
     fn new_inherited(session: &XRSession) -> XRSessionEvent {
@@ -94,6 +97,7 @@ impl XRSessionEvent {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRSessionEventMethods for XRSessionEvent {
     // https://immersive-web.github.io/webxr/#dom-xrsessioneventinit-session
     fn Session(&self) -> DomRoot<XRSession> {

@@ -6,6 +6,7 @@
 // https://github.com/servo/servo/issues/27493
 
 // https://immersive-web.github.io/layers/#xrprojectionlayer
+
 [SecureContext, Exposed=Window, Pref="dom.webxr.layers.enabled"]
 interface XRProjectionLayer : XRCompositionLayer {
 //   readonly attribute boolean ignoreDepthValues;

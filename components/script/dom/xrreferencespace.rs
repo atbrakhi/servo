@@ -4,6 +4,7 @@
 
 use dom_struct::dom_struct;
 use euclid::{Point2D, RigidTransform3D};
+#[cfg(feature = "webxr")]
 use webxr_api::{self, Floor, Frame, Space};
 
 use crate::dom::bindings::codegen::Bindings::XRReferenceSpaceBinding::{
@@ -13,10 +14,14 @@ use crate::dom::bindings::inheritance::Castable;
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{cast_transform, ApiPose, BaseTransform, XRSession};
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRReferenceSpace {
     xrspace: XRSpace,
@@ -24,6 +29,7 @@ pub struct XRReferenceSpace {
     ty: XRReferenceSpaceType,
 }
 
+#[cfg(feature = "webxr")]
 impl XRReferenceSpace {
     pub fn new_inherited(
         session: &XRSession,
@@ -77,6 +83,7 @@ impl XRReferenceSpace {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRReferenceSpaceMethods for XRReferenceSpace {
     /// <https://immersive-web.github.io/webxr/#dom-xrreferencespace-getoffsetreferencespace>
     fn GetOffsetReferenceSpace(&self, new: &XRRigidTransform) -> DomRoot<Self> {
@@ -94,6 +101,7 @@ impl XRReferenceSpaceMethods for XRReferenceSpace {
     event_handler!(reset, GetOnreset, SetOnreset);
 }
 
+#[cfg(feature = "webxr")]
 impl XRReferenceSpace {
     /// Get a transform that can be used to locate the base space
     ///

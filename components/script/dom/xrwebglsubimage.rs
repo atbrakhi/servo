@@ -4,6 +4,7 @@
 
 use dom_struct::dom_struct;
 use euclid::Size2D;
+#[cfg(feature = "webxr")]
 use webxr_api::Viewport;
 
 use crate::dom::bindings::codegen::Bindings::XRWebGLSubImageBinding::XRWebGLSubImage_Binding::XRWebGLSubImageMethods;
@@ -11,6 +12,7 @@ use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::webgltexture::WebGLTexture;
 use crate::dom::xrsubimage::XRSubImage;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRWebGLSubImage {
     xr_sub_image: XRSubImage,
@@ -21,6 +23,7 @@ pub struct XRWebGLSubImage {
     size: Size2D<u32, Viewport>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRWebGLSubImageMethods for XRWebGLSubImage {
     /// <https://immersive-web.github.io/layers/#dom-xrwebglsubimage-colortexture>
     fn ColorTexture(&self) -> DomRoot<WebGLTexture> {

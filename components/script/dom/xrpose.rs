@@ -9,15 +9,19 @@ use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::dompointreadonly::DOMPointReadOnly;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::ApiRigidTransform;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRPose {
     reflector_: Reflector,
     transform: Dom<XRRigidTransform>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRPose {
     pub fn new_inherited(transform: &XRRigidTransform) -> XRPose {
         XRPose {
@@ -33,6 +37,7 @@ impl XRPose {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRPoseMethods for XRPose {
     /// <https://immersive-web.github.io/webxr/#dom-xrpose-transform>
     fn Transform(&self) -> DomRoot<XRRigidTransform> {

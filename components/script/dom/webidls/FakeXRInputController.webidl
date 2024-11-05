@@ -4,6 +4,7 @@
 
 // https://immersive-web.github.io/webxr-test-api/#fakexrinputcontroller
 
+
 [Exposed=Window, Pref="dom.webxr.test"]
 interface FakeXRInputController {
   undefined setHandedness(XRHandedness handedness);

@@ -283,6 +283,7 @@ pub struct Window {
     #[no_trace]
     webgl_chan: Option<WebGLChan>,
 
+    #[cfg(feature = "webxr")]
     #[ignore_malloc_size_of = "defined in webxr"]
     #[no_trace]
     webxr_registry: webxr_api::Registry,
@@ -493,6 +494,7 @@ impl Window {
             .map(|chan| WebGLCommandSender::new(chan.clone()))
     }
 
+    #[cfg(feature = "webxr")]
     pub fn webxr_registry(&self) -> webxr_api::Registry {
         self.webxr_registry.clone()
     }
@@ -2545,6 +2547,7 @@ impl Window {
         creator_url: ServoUrl,
         navigation_start: CrossProcessInstant,
         webgl_chan: Option<WebGLChan>,
+        #[cfg(feature = "webxr")]
         webxr_registry: webxr_api::Registry,
         microtask_queue: Rc<MicrotaskQueue>,
         webrender_document: DocumentId,
@@ -2625,6 +2628,7 @@ impl Window {
             media_query_lists: DOMTracker::new(),
             test_runner: Default::default(),
             webgl_chan,
+            #[cfg(feature = "webxr")]
             webxr_registry,
             pending_layout_images: Default::default(),
             unminified_js_dir: Default::default(),

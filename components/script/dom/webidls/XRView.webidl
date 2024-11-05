@@ -4,11 +4,13 @@
 
 // https://immersive-web.github.io/webxr/#xrview-interface
 
+
 enum XREye {
   "left",
   "right",
   "none",
 };
+
 
 [SecureContext, Exposed=Window, Pref="dom.webxr.enabled"]
 interface XRView {

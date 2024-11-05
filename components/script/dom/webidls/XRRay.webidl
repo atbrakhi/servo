@@ -12,6 +12,7 @@ dictionary XRRayDirectionInit {
 };
 
 [SecureContext, Exposed=Window, Pref="dom.webxr.enabled"]
+
 interface XRRay {
   [Throws] constructor(optional DOMPointInit origin = {}, optional XRRayDirectionInit direction = {});
   [Throws] constructor(XRRigidTransform transform);

@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
+#[cfg(feature = "webxr")]
 use webxr_api::{InputId, InputSource};
 
 use crate::dom::bindings::cell::DomRefCell;
@@ -12,16 +13,19 @@ use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
 use crate::dom::xrinputsourceschangeevent::XRInputSourcesChangeEvent;
 use crate::dom::xrsession::XRSession;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRInputSourceArray {
     reflector_: Reflector,
     input_sources: DomRefCell<Vec<Dom<XRInputSource>>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourceArray {
     fn new_inherited() -> XRInputSourceArray {
         XRInputSourceArray {
@@ -131,6 +135,7 @@ impl XRInputSourceArray {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourceArrayMethods for XRInputSourceArray {
     /// <https://immersive-web.github.io/webxr/#dom-xrinputsourcearray-length>
     fn Length(&self) -> u32 {

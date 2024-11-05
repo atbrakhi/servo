@@ -4,6 +4,7 @@
 
 // https://github.com/immersive-web/webxr-test-api/
 
+
 [Exposed=Window, Pref="dom.webxr.test"]
 interface FakeXRDevice {
   // Sets the values to be used for subsequent requestAnimationFrame() callbacks.
@@ -33,6 +34,7 @@ interface FakeXRDevice {
   // undefined clearDepthSensingData();
 };
 
+
 // https://immersive-web.github.io/webxr/#dom-xrwebgllayer-getviewport
 dictionary FakeXRViewInit {
   required XREye eye;
@@ -46,20 +48,24 @@ dictionary FakeXRViewInit {
   FakeXRFieldOfViewInit fieldOfView;
 };
 
+
 // https://immersive-web.github.io/webxr/#xrviewport
 dictionary FakeXRDeviceResolution {
     required long width;
     required long height;
 };
 
+
 dictionary FakeXRBoundsPoint {
   double x; double z;
 };
+
 
 dictionary FakeXRRigidTransformInit {
     required sequence<float> position;
     required sequence<float> orientation;
 };
+
 
 dictionary FakeXRFieldOfViewInit {
   required float upDegrees;
@@ -68,10 +74,12 @@ dictionary FakeXRFieldOfViewInit {
   required float rightDegrees;
 };
 
+
 // hit testing
 dictionary FakeXRWorldInit {
   required sequence<FakeXRRegionInit> hitTestRegions;
 };
+
 
 
 dictionary FakeXRRegionInit {

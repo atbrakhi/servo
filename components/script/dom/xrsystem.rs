@@ -11,9 +11,11 @@ use ipc_channel::ipc::{self as ipc_crate, IpcReceiver};
 use ipc_channel::router::ROUTER;
 use profile_traits::ipc;
 use servo_config::pref;
+#[cfg(feature = "webxr")]
 use webxr_api::{Error as XRError, Frame, Session, SessionInit, SessionMode};
 
 use crate::dom::bindings::cell::DomRefCell;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRSystemBinding::{
     XRSessionInit, XRSessionMode, XRSystemMethods,
 };
@@ -29,17 +31,21 @@ use crate::dom::gamepad::Gamepad;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::promise::Promise;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
+#[cfg(feature = "webxr")]
 use crate::dom::xrtest::XRTest;
 use crate::realms::InRealm;
 use crate::script_thread::ScriptThread;
 use crate::task_source::TaskSource;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRSystem {
     eventtarget: EventTarget,
     gamepads: DomRefCell<Vec<Dom<Gamepad>>>,
     pending_immersive_session: Cell<bool>,
+    #[cfg(feature = "webxr")]
     active_immersive_session: MutNullableDom<XRSession>,
     active_inline_sessions: DomRefCell<Vec<Dom<XRSession>>>,
     test: MutNullableDom<XRTest>,
@@ -47,6 +53,7 @@ pub struct XRSystem {
     pipeline: PipelineId,
 }
 
+#[cfg(feature = "webxr")]
 impl XRSystem {
     fn new_inherited(pipeline: PipelineId) -> XRSystem {
         XRSystem {
@@ -99,6 +106,7 @@ impl XRSystem {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl From<XRSessionMode> for SessionMode {
     fn from(mode: XRSessionMode) -> SessionMode {
         match mode {
@@ -109,6 +117,7 @@ impl From<XRSessionMode> for SessionMode {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRSystemMethods for XRSystem {
     /// <https://immersive-web.github.io/webxr/#dom-xr-issessionsupported>
     fn IsSessionSupported(&self, mode: XRSessionMode) -> Rc<Promise> {
@@ -275,6 +284,7 @@ impl XRSystemMethods for XRSystem {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRSystem {
     fn session_obtained(
         &self,

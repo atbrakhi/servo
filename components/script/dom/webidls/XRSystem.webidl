@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // https://immersive-web.github.io/webxr/#xrsystem-interface
+
 [SecureContext, Exposed=Window, Pref="dom.webxr.enabled"]
 interface XRSystem: EventTarget {
   // Methods
@@ -12,6 +13,7 @@ interface XRSystem: EventTarget {
   // Events
   // attribute EventHandler ondevicechange;
 };
+
 
 [SecureContext]
 partial interface Navigator {

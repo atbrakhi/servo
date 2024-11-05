@@ -7,6 +7,7 @@ use js::conversions::ToJSValConvertible;
 use js::jsapi::Heap;
 use js::jsval::{JSVal, UndefinedValue};
 use script_traits::GamepadSupportedHapticEffects;
+#[cfg(feature = "webxr")]
 use webxr_api::{Handedness, InputFrame, InputId, InputSource, TargetRayMode};
 
 use crate::dom::bindings::codegen::Bindings::XRInputSourceBinding::{
@@ -16,12 +17,14 @@ use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot, MutNullableDom};
 use crate::dom::gamepad::Gamepad;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrhand::XRHand;
 use crate::dom::xrsession::XRSession;
 use crate::dom::xrspace::XRSpace;
 use crate::realms::enter_realm;
 use crate::script_runtime::JSContext;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRInputSource {
     reflector: Reflector,
@@ -37,6 +40,7 @@ pub struct XRInputSource {
     gamepad: DomRoot<Gamepad>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSource {
     pub fn new_inherited(
         global: &GlobalScope,
@@ -116,6 +120,7 @@ impl XRInputSource {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourceMethods for XRInputSource {
     /// <https://immersive-web.github.io/webxr/#dom-xrinputsource-handedness>
     fn Handedness(&self) -> XRHandedness {

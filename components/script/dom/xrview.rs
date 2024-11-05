@@ -7,6 +7,7 @@ use std::cell::Cell;
 use dom_struct::dom_struct;
 use euclid::RigidTransform3D;
 use js::typedarray::{Float32, Float32Array};
+#[cfg(feature = "webxr")]
 use webxr_api::{ApiSpace, View};
 
 use super::bindings::buffer_source::HeapBufferSource;
@@ -15,10 +16,13 @@ use crate::dom::bindings::num::Finite;
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{cast_transform, BaseSpace, BaseTransform, XRSession};
 use crate::script_runtime::JSContext;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRView {
     reflector_: Reflector,
@@ -34,6 +38,7 @@ pub struct XRView {
     requested_viewport_scale: Cell<f64>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRView {
     fn new_inherited(
         session: &XRSession,
@@ -86,6 +91,7 @@ impl XRView {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRViewMethods for XRView {
     /// <https://immersive-web.github.io/webxr/#dom-xrview-eye>
     fn Eye(&self) -> XREye {

@@ -37,6 +37,7 @@ pub enum TexParameterValue {
 #[derive(JSTraceable, MallocSizeOf)]
 enum WebGLTextureOwner {
     WebGL,
+    #[cfg(feature = "webxr")]
     WebXR(Dom<XRSession>),
 }
 
@@ -79,8 +80,17 @@ impl WebGLTexture {
             target: Cell::new(None),
             is_deleted: Cell::new(false),
             owner: owner
-                .map(|session| WebGLTextureOwner::WebXR(Dom::from_ref(session)))
-                .unwrap_or(WebGLTextureOwner::WebGL),
+                .map(|session| {
+                    #[cfg(feature = "webxr")]
+                    {
+                        WebGLTextureOwner::WebXR(Dom::from_ref(session))
+                    }
+                    #[cfg(not(feature = "webxr"))]
+                    {
+                        WebGLTextureOwner::WebGL
+                    }
+                })
+            .unwrap_or(WebGLTextureOwner::WebGL),
             immutable_levels: Cell::new(None),
             face_count: Cell::new(0),
             base_mipmap_level: 0,
@@ -107,6 +117,7 @@ impl WebGLTexture {
         )
     }
 
+    #[cfg(feature = "webxr")]
     pub fn new_webxr(
         context: &WebGLRenderingContext,
         id: WebGLTextureId,
@@ -237,7 +248,8 @@ impl WebGLTexture {
                 let _ = fb.detach_texture(self);
             }
 
-            // We don't delete textures owned by WebXR
+            // We don't delete textures owned by
+            #[cfg(feature = "webxr")]
             if let WebGLTextureOwner::WebXR(_) = self.owner {
                 return;
             }
@@ -252,6 +264,7 @@ impl WebGLTexture {
 
     pub fn is_invalid(&self) -> bool {
         // https://immersive-web.github.io/layers/#xrwebglsubimagetype
+        #[cfg(feature = "webxr")]
         if let WebGLTextureOwner::WebXR(ref session) = self.owner {
             if session.is_outside_raf() {
                 return true;

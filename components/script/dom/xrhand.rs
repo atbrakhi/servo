@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
+#[cfg(feature = "webxr")]
 use webxr_api::{FingerJoint, Hand, Joint};
 
 use crate::dom::bindings::codegen::Bindings::XRHandBinding::{XRHandJoint, XRHandMethods};
@@ -13,6 +14,7 @@ use crate::dom::globalscope::GlobalScope;
 use crate::dom::xrinputsource::XRInputSource;
 use crate::dom::xrjointspace::XRJointSpace;
 
+#[cfg(feature = "webxr")]
 const JOINT_SPACE_MAP: [(XRHandJoint, Joint); 25] = [
     (XRHandJoint::Wrist, Joint::Wrist),
     (XRHandJoint::Thumb_metacarpal, Joint::ThumbMetacarpal),
@@ -100,6 +102,7 @@ const JOINT_SPACE_MAP: [(XRHandJoint, Joint); 25] = [
     ),
 ];
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRHand {
     reflector_: Reflector,
@@ -110,6 +113,7 @@ pub struct XRHand {
     spaces: Hand<Dom<XRJointSpace>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRHand {
     fn new_inherited(source: &XRInputSource, spaces: &Hand<DomRoot<XRJointSpace>>) -> XRHand {
         XRHand {
@@ -134,6 +138,7 @@ impl XRHand {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRHandMethods for XRHand {
     /// <https://github.com/immersive-web/webxr-hands-input/blob/master/explainer.md>
     fn Size(&self) -> u32 {
@@ -154,6 +159,7 @@ impl XRHandMethods for XRHand {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl Iterable for XRHand {
     type Key = XRHandJoint;
     type Value = DomRoot<XRJointSpace>;

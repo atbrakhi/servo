@@ -7,6 +7,7 @@ use euclid::RigidTransform3D;
 use js::conversions::ToJSValConvertible;
 use js::jsapi::Heap;
 use js::jsval::{JSVal, UndefinedValue};
+#[cfg(feature = "webxr")]
 use webxr_api::{Viewer, ViewerPose, Views};
 
 use crate::dom::bindings::codegen::Bindings::XRViewBinding::XREye;
@@ -14,13 +15,18 @@ use crate::dom::bindings::codegen::Bindings::XRViewerPoseBinding::XRViewerPoseMe
 use crate::dom::bindings::reflector::reflect_dom_object;
 use crate::dom::bindings::root::DomRoot;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrpose::XRPose;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{cast_transform, BaseSpace, BaseTransform, XRSession};
+#[cfg(feature = "webxr")]
 use crate::dom::xrview::XRView;
 use crate::realms::enter_realm;
 use crate::script_runtime::JSContext;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRViewerPose {
     pose: XRPose,
@@ -28,6 +34,7 @@ pub struct XRViewerPose {
     views: Heap<JSVal>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRViewerPose {
     fn new_inherited(transform: &XRRigidTransform) -> XRViewerPose {
         XRViewerPose {
@@ -133,6 +140,7 @@ impl XRViewerPose {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRViewerPoseMethods for XRViewerPose {
     /// <https://immersive-web.github.io/webxr/#dom-xrviewerpose-views>
     fn Views(&self, _cx: JSContext) -> JSVal {

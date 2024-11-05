@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
+#[cfg(feature = "webxr")]
 use webxr_api::HitTestId;
 
 use crate::dom::bindings::codegen::Bindings::XRHitTestSourceBinding::XRHitTestSourceMethods;
@@ -11,6 +12,7 @@ use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::xrsession::XRSession;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRHitTestSource {
     reflector_: Reflector,
@@ -20,6 +22,7 @@ pub struct XRHitTestSource {
     session: Dom<XRSession>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRHitTestSource {
     fn new_inherited(id: HitTestId, session: &XRSession) -> XRHitTestSource {
         XRHitTestSource {
@@ -45,6 +48,7 @@ impl XRHitTestSource {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRHitTestSourceMethods for XRHitTestSource {
     // https://immersive-web.github.io/hit-test/#dom-xrhittestsource-cancel
     fn Cancel(&self) {

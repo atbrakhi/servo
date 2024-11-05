@@ -4,6 +4,7 @@
 
 use dom_struct::dom_struct;
 use euclid::RigidTransform3D;
+#[cfg(feature = "webxr")]
 use webxr_api::{BaseSpace, Frame, Space};
 
 use crate::dom::bindings::inheritance::Castable;
@@ -11,11 +12,16 @@ use crate::dom::bindings::reflector::reflect_dom_object;
 use crate::dom::bindings::root::{Dom, DomRoot, MutNullableDom};
 use crate::dom::eventtarget::EventTarget;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrjointspace::XRJointSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrreferencespace::XRReferenceSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{cast_transform, ApiPose, XRSession};
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRSpace {
     eventtarget: EventTarget,
@@ -25,6 +31,7 @@ pub struct XRSpace {
     is_grip_space: bool,
 }
 
+#[cfg(feature = "webxr")]
 impl XRSpace {
     pub fn new_inherited(session: &XRSession) -> XRSpace {
         XRSpace {
@@ -81,6 +88,7 @@ impl XRSpace {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRSpace {
     /// Gets pose represented by this space
     ///

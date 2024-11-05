@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // https://immersive-web.github.io/layers/#XRWebGLBindingtype
+
 [SecureContext, Exposed=Window, Pref="dom.webxr.layers.enabled"]
 interface XRWebGLBinding {
   constructor(XRSession session, XRWebGLRenderingContext context);

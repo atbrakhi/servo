@@ -18,6 +18,7 @@ use js::jsval::JSVal;
 use js::typedarray::Float32Array;
 use profile_traits::ipc;
 use servo_atoms::Atom;
+#[cfg(feature = "webxr")]
 use webxr_api::{
     self, util, ApiSpace, ContextId as WebXRContextId, Display, EntityTypes, EnvironmentBlendMode,
     Event as XREvent, Frame, FrameUpdateEvent, HitTestId, HitTestSource, InputFrame, InputId, Ray,
@@ -30,14 +31,19 @@ use crate::dom::bindings::callback::ExceptionHandling;
 use crate::dom::bindings::cell::DomRefCell;
 use crate::dom::bindings::codegen::Bindings::NavigatorBinding::Navigator_Binding::NavigatorMethods;
 use crate::dom::bindings::codegen::Bindings::WindowBinding::Window_Binding::WindowMethods;
+#[cfg(feature = "webxr")]
+
 use crate::dom::bindings::codegen::Bindings::XRHitTestSourceBinding::{
     XRHitTestOptionsInit, XRHitTestTrackableType,
 };
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRInputSourceArrayBinding::XRInputSourceArray_Binding::XRInputSourceArrayMethods;
 use crate::dom::bindings::codegen::Bindings::XRReferenceSpaceBinding::XRReferenceSpaceType;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRRenderStateBinding::{
     XRRenderStateInit, XRRenderStateMethods,
 };
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRSessionBinding::{
     XREnvironmentBlendMode, XRFrameRequestCallback, XRInteractionMode, XRSessionMethods,
     XRVisibilityState,
@@ -54,21 +60,33 @@ use crate::dom::event::Event;
 use crate::dom::eventtarget::EventTarget;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::promise::Promise;
+#[cfg(feature = "webxr")]
 use crate::dom::xrboundedreferencespace::XRBoundedReferenceSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrhittestsource::XRHitTestSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsourcearray::XRInputSourceArray;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsourceevent::XRInputSourceEvent;
+#[cfg(feature = "webxr")]
 use crate::dom::xrreferencespace::XRReferenceSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrreferencespaceevent::XRReferenceSpaceEvent;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrenderstate::XRRenderState;
+#[cfg(feature = "webxr")]
 use crate::dom::xrrigidtransform::XRRigidTransform;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsessionevent::XRSessionEvent;
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
 use crate::realms::InRealm;
 use crate::script_runtime::JSContext;
 use crate::task_source::TaskSource;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRSession {
     eventtarget: EventTarget,
@@ -114,6 +132,7 @@ pub struct XRSession {
     reference_spaces: DomRefCell<Vec<Dom<XRReferenceSpace>>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRSession {
     fn new_inherited(
         session: Session,
@@ -610,6 +629,7 @@ impl XRSession {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRSessionMethods for XRSession {
     // https://immersive-web.github.io/webxr/#eventdef-xrsession-end
     event_handler!(end, GetOnend, SetOnend);
@@ -1087,6 +1107,7 @@ pub fn cast_transform<T, U, V, W>(
     unsafe { mem::transmute(transform) }
 }
 
+#[cfg(feature = "webxr")]
 impl From<EnvironmentBlendMode> for XREnvironmentBlendMode {
     fn from(x: EnvironmentBlendMode) -> Self {
         match x {

@@ -250,6 +250,7 @@ impl NavigatorMethods for Navigator {
     }
 
     /// <https://immersive-web.github.io/webxr/#dom-navigator-xr>
+    #[cfg(feature = "webxr")]
     fn Xr(&self) -> DomRoot<XRSystem> {
         self.xr.or_init(|| XRSystem::new(self.global().as_window()))
     }

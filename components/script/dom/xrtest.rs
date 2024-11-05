@@ -12,6 +12,7 @@ use dom_struct::dom_struct;
 use ipc_channel::ipc::IpcSender;
 use ipc_channel::router::ROUTER;
 use profile_traits::ipc;
+#[cfg(feature = "webxr")]
 use webxr_api::{self, Error as XRError, MockDeviceInit, MockDeviceMsg};
 
 use crate::dom::bindings::callback::ExceptionHandling;
@@ -22,18 +23,21 @@ use crate::dom::bindings::codegen::Bindings::XRTestBinding::{FakeXRDeviceInit, X
 use crate::dom::bindings::refcounted::{Trusted, TrustedPromise};
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
+#[cfg(feature = "webxr")]
 use crate::dom::fakexrdevice::{get_origin, get_views, get_world, FakeXRDevice};
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::promise::Promise;
 use crate::script_thread::ScriptThread;
 use crate::task_source::TaskSource;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRTest {
     reflector: Reflector,
     devices_connected: DomRefCell<Vec<Dom<FakeXRDevice>>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRTest {
     pub fn new_inherited() -> XRTest {
         XRTest {
@@ -64,6 +68,7 @@ impl XRTest {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRTestMethods for XRTest {
     /// <https://github.com/immersive-web/webxr-test-api/blob/master/explainer.md>
     #[allow(unsafe_code)]

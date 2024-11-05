@@ -652,6 +652,7 @@ pub struct ScriptThread {
     webgl_chan: Option<WebGLPipeline>,
 
     /// The WebXR device registry
+    #[cfg(feature = "webxr")]
     #[no_trace]
     webxr_registry: webxr_api::Registry,
 
@@ -1390,6 +1391,7 @@ impl ScriptThread {
             font_cache_thread,
 
             webgl_chan: state.webgl_chan,
+            #[cfg(feature = "webxr")]
             webxr_registry: state.webxr_registry,
 
             worklet_thread_pool: Default::default(),
@@ -3688,6 +3690,7 @@ impl ScriptThread {
             final_url.clone(),
             incomplete.navigation_start,
             self.webgl_chan.as_ref().map(|chan| chan.channel()),
+            #[cfg(feature = "webxr")]
             self.webxr_registry.clone(),
             self.microtask_queue.clone(),
             self.webrender_document,

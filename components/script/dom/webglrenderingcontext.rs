@@ -4686,6 +4686,7 @@ impl WebGLRenderingContextMethods for WebGLRenderingContext {
     }
 
     /// <https://immersive-web.github.io/webxr/#dom-webglrenderingcontextbase-makexrcompatible>
+    #[cfg(feature = "webxr")]
     fn MakeXRCompatible(&self) -> Rc<Promise> {
         // XXXManishearth Fill in with compatibility checks when rust-webxr supports this
         let p = Promise::new(&self.global());

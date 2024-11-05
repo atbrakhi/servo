@@ -7,6 +7,7 @@ use js::rust::HandleObject;
 use servo_atoms::Atom;
 
 use crate::dom::bindings::codegen::Bindings::EventBinding::Event_Binding::EventMethods;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRInputSourceEventBinding::{
     self, XRInputSourceEventMethods,
 };
@@ -18,10 +19,13 @@ use crate::dom::bindings::str::DOMString;
 use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
 use crate::script_runtime::CanGc;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRInputSourceEvent {
     event: Event,
@@ -29,6 +33,7 @@ pub struct XRInputSourceEvent {
     source: Dom<XRInputSource>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourceEvent {
     #[allow(crown::unrooted_must_root)]
     fn new_inherited(frame: &XRFrame, source: &XRInputSource) -> XRInputSourceEvent {
@@ -103,6 +108,7 @@ impl XRInputSourceEvent {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRInputSourceEventMethods for XRInputSourceEvent {
     // https://immersive-web.github.io/webxr/#dom-xrinputsourceeventinit-frame
     fn Frame(&self) -> DomRoot<XRFrame> {

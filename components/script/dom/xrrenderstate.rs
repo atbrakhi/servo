@@ -6,6 +6,7 @@ use std::cell::Cell;
 
 use dom_struct::dom_struct;
 use js::jsval::JSVal;
+#[cfg(feature = "webxr")]
 use webxr_api::SubImages;
 
 use crate::dom::bindings::cell::DomRefCell;
@@ -15,10 +16,12 @@ use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot, MutNullableDom};
 use crate::dom::bindings::utils::to_frozen_array;
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrlayer::XRLayer;
 use crate::dom::xrwebgllayer::XRWebGLLayer;
 use crate::script_runtime::JSContext;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRRenderState {
     reflector_: Reflector,
@@ -29,6 +32,7 @@ pub struct XRRenderState {
     layers: DomRefCell<Vec<Dom<XRLayer>>>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRRenderState {
     pub fn new_inherited(
         depth_near: f64,
@@ -124,6 +128,7 @@ impl XRRenderState {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRRenderStateMethods for XRRenderState {
     /// <https://immersive-web.github.io/webxr/#dom-xrrenderstate-depthnear>
     fn DepthNear(&self) -> Finite<f64> {

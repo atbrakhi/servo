@@ -9,6 +9,7 @@ use js::typedarray::{Float32, Float32Array};
 
 use super::bindings::buffer_source::HeapBufferSource;
 use crate::dom::bindings::codegen::Bindings::DOMPointBinding::DOMPointInit;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRRigidTransformBinding::XRRigidTransformMethods;
 use crate::dom::bindings::error::{Error, Fallible};
 use crate::dom::bindings::reflector::{reflect_dom_object_with_proto, DomObject, Reflector};
@@ -16,9 +17,11 @@ use crate::dom::bindings::root::{DomRoot, MutNullableDom};
 use crate::dom::dompointreadonly::DOMPointReadOnly;
 use crate::dom::globalscope::GlobalScope;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::ApiRigidTransform;
 use crate::script_runtime::{CanGc, JSContext};
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRRigidTransform {
     reflector_: Reflector,
@@ -32,6 +35,7 @@ pub struct XRRigidTransform {
     matrix: HeapBufferSource<Float32>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRRigidTransform {
     fn new_inherited(transform: ApiRigidTransform) -> XRRigidTransform {
         XRRigidTransform {
@@ -126,6 +130,7 @@ impl XRRigidTransform {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRRigidTransformMethods for XRRigidTransform {
     // https://immersive-web.github.io/webxr/#dom-xrrigidtransform-position
     fn Position(&self) -> DomRoot<DOMPointReadOnly> {
@@ -169,6 +174,7 @@ impl XRRigidTransformMethods for XRRigidTransform {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRRigidTransform {
     /// <https://immersive-web.github.io/webxr/#dom-xrpose-transform>
     pub fn transform(&self) -> ApiRigidTransform {
