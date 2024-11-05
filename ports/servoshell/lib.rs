@@ -46,7 +46,6 @@ pub fn init_tracing() {
     {
         let subscriber = tracing_subscriber::registry();
 
-        #[cfg(feature = "tracing-perfetto")]
         let subscriber = {
             use tracing_subscriber::layer::SubscriberExt;
             // Set up a PerfettoLayer for performance tracing.
