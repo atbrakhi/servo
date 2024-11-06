@@ -25,7 +25,10 @@ def main():
     from CodegenRust import CGBindingRoot
 
     parser = WebIDL.Parser(make_dir(os.path.join(out_dir, "cache")))
-    webidls = [name for name in os.listdir(webidls_dir) if name.endswith(".webidl")]
+    # exclude XR-related files.
+    # TODO: fix this if/when we want to land this change
+    webidls = [name for name in os.listdir(webidls_dir) if name.endswith(".webidl") and "XR" not in name]
+
     for webidl in webidls:
         filename = os.path.join(webidls_dir, webidl)
         with open(filename, "r", encoding="utf-8") as f:

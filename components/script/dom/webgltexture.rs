@@ -53,6 +53,7 @@ pub struct WebGLTexture {
     /// The target to which this texture was bound the first time
     target: Cell<Option<u32>>,
     is_deleted: Cell<bool>,
+    #[cfg(feature = "webxr")]
     owner: WebGLTextureOwner,
     /// Stores information about mipmap levels and cubemap faces.
     #[ignore_malloc_size_of = "Arrays are cumbersome"]
@@ -81,6 +82,7 @@ impl WebGLTexture {
             id,
             target: Cell::new(None),
             is_deleted: Cell::new(false),
+            #[cfg(feature = "webxr")]
             owner: owner
                 .map(|session| {
                     #[cfg(feature = "webxr")]
@@ -114,7 +116,11 @@ impl WebGLTexture {
 
     pub fn new(context: &WebGLRenderingContext, id: WebGLTextureId) -> DomRoot<Self> {
         reflect_dom_object(
-            Box::new(WebGLTexture::new_inherited(context, id, None)),
+            Box::new(WebGLTexture::new_inherited(
+                context,
+                id,
+                #[cfg(feature = "webxr")]
+                None)),
             &*context.global(),
         )
     }

@@ -18,7 +18,9 @@ use webxr_api::{self, Error as XRError, MockDeviceInit, MockDeviceMsg};
 use crate::dom::bindings::callback::ExceptionHandling;
 use crate::dom::bindings::cell::DomRefCell;
 use crate::dom::bindings::codegen::Bindings::FunctionBinding::Function;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRSystemBinding::XRSessionMode;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRTestBinding::{FakeXRDeviceInit, XRTestMethods};
 use crate::dom::bindings::refcounted::{Trusted, TrustedPromise};
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};

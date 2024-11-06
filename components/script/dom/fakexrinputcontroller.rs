@@ -10,10 +10,13 @@ use webxr_api::{
     SelectKind, TargetRayMode,
 };
 
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::FakeXRDeviceBinding::FakeXRRigidTransformInit;
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::FakeXRInputControllerBinding::{
     FakeXRButtonStateInit, FakeXRButtonType, FakeXRInputControllerMethods,
 };
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRInputSourceBinding::{
     XRHandedness, XRTargetRayMode,
 };
