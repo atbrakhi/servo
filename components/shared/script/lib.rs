@@ -656,6 +656,7 @@ pub struct InitialScriptState {
     /// A channel to the WebGL thread used in this pipeline.
     pub webgl_chan: Option<WebGLPipeline>,
     /// The XR device registry
+    #[cfg(feature = "webxr")]
     pub webxr_registry: webxr_api::Registry,
     /// The Webrender document ID associated with this thread.
     pub webrender_document: DocumentId,

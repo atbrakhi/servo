@@ -195,8 +195,8 @@ pub struct InitialPipelineState {
     /// A channel to the WebGL thread.
     pub webgl_chan: Option<WebGLPipeline>,
 
-    #[cfg(feature = "webxr")]
     /// The XR device registry
+    #[cfg(feature = "webxr")]
     pub webxr_registry: webxr_api::Registry,
 
     /// Application window's GL Context for Media player
@@ -546,8 +546,8 @@ impl UnprivilegedPipelineContent {
                 pipeline_namespace_id: self.pipeline_namespace_id,
                 content_process_shutdown_chan,
                 webgl_chan: self.webgl_chan,
-                #[cfg(feature = "webxr")]
-                webxr_registry: self.webxr_registry,
+                // #[cfg(feature = "webxr")]
+                // webxr_registry: self.webxr_registry,
                 webrender_document: self.webrender_document,
                 webrender_api_sender: self.webrender_api_sender.clone(),
                 player_context: self.player_context.clone(),

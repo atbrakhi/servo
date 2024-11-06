@@ -11,6 +11,9 @@ rust-version.workspace = true
 name = "script_traits"
 path = "lib.rs"
 
+[features]
+webxr = ["dep:webxr-api"]
+
 [dependencies]
 background_hang_monitor_api = { workspace = true }
 base = { workspace = true }
@@ -45,4 +48,4 @@ webdriver = { workspace = true }
 webgpu = { path = "../../webgpu" }
 webrender_api = { workspace = true }
 webrender_traits = { workspace = true }
-webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"] }
+webxr-api = { git = "https://github.com/servo/webxr", features = ["ipc"], optional = true}
