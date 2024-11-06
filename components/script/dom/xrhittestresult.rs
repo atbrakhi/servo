@@ -10,8 +10,11 @@ use crate::dom::bindings::codegen::Bindings::XRHitTestResultBinding::XRHitTestRe
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrpose::XRPose;
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
 
 #[cfg(feature = "webxr")]

@@ -18,6 +18,7 @@ use crate::dom::bindings::utils::to_frozen_array;
 use crate::dom::globalscope::GlobalScope;
 #[cfg(feature = "webxr")]
 use crate::dom::xrlayer::XRLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrwebgllayer::XRWebGLLayer;
 use crate::script_runtime::JSContext;
 

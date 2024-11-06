@@ -17,18 +17,29 @@ use crate::dom::bindings::reflector::{reflect_dom_object_with_proto, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::webglrenderingcontext::WebGLRenderingContext;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrcompositionlayer::XRCompositionLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrcubelayer::XRCubeLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrcylinderlayer::XRCylinderLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrequirectlayer::XREquirectLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrframe::XRFrame;
+#[cfg(feature = "webxr")]
 use crate::dom::xrprojectionlayer::XRProjectionLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrquadlayer::XRQuadLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
+#[cfg(feature = "webxr")]
 use crate::dom::xrview::XRView;
+#[cfg(feature = "webxr")]
 use crate::dom::xrwebglsubimage::XRWebGLSubImage;
 use crate::script_runtime::CanGc;
 
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRWebGLBinding {
     reflector: Reflector,
@@ -36,6 +47,7 @@ pub struct XRWebGLBinding {
     context: Dom<WebGLRenderingContext>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRWebGLBinding {
     pub fn new_inherited(session: &XRSession, context: &WebGLRenderingContext) -> XRWebGLBinding {
         XRWebGLBinding {
@@ -78,6 +90,7 @@ impl XRWebGLBinding {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRWebGLBindingMethods for XRWebGLBinding {
     /// <https://immersive-web.github.io/layers/#dom-xrwebglbinding-createprojectionlayer>
     fn CreateProjectionLayer(

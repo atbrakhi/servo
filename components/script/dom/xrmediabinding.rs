@@ -12,18 +12,23 @@ use crate::dom::bindings::reflector::{reflect_dom_object_with_proto, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::htmlvideoelement::HTMLVideoElement;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrcylinderlayer::XRCylinderLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrequirectlayer::XREquirectLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrquadlayer::XRQuadLayer;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 use crate::script_runtime::CanGc;
-
+#[cfg(feature = "webxr")]
 #[dom_struct]
 pub struct XRMediaBinding {
     reflector: Reflector,
     session: Dom<XRSession>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRMediaBinding {
     pub fn new_inherited(session: &XRSession) -> XRMediaBinding {
         XRMediaBinding {
@@ -68,6 +73,7 @@ impl XRMediaBinding {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRMediaBindingMethods for XRMediaBinding {
     /// <https://immersive-web.github.io/layers/#dom-xrmediabinding-createquadlayer>
     fn CreateQuadLayer(

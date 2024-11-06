@@ -4,9 +4,11 @@
 
 use dom_struct::dom_struct;
 
+#[cfg(feature = "webxr")]
 use crate::dom::xrcompositionlayer::XRCompositionLayer;
 
 #[dom_struct]
+#[cfg(feature = "webxr")]
 pub struct XRProjectionLayer {
     composition_layer: XRCompositionLayer,
 }

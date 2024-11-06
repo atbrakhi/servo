@@ -7,14 +7,17 @@ use dom_struct::dom_struct;
 use crate::dom::bindings::codegen::Bindings::XRSubImageBinding::XRSubImage_Binding::XRSubImageMethods;
 use crate::dom::bindings::reflector::Reflector;
 use crate::dom::bindings::root::{Dom, DomRoot};
+#[cfg(feature = "webxr")]
 use crate::dom::xrviewport::XRViewport;
 
 #[dom_struct]
+#[cfg(feature = "webxr")]
 pub struct XRSubImage {
     reflector: Reflector,
     viewport: Dom<XRViewport>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRSubImageMethods for XRSubImage {
     /// <https://immersive-web.github.io/layers/#dom-xrsubimage-viewport>
     fn Viewport(&self) -> DomRoot<XRViewport> {

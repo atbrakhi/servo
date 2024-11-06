@@ -15,7 +15,9 @@ use crate::dom::event::Event;
 use crate::dom::globalscope::GlobalScope;
 #[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsourceschangeevent::XRInputSourcesChangeEvent;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 
 #[cfg(feature = "webxr")]

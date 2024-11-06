@@ -7,9 +7,11 @@ use euclid::Size2D;
 #[cfg(feature = "webxr")]
 use webxr_api::Viewport;
 
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRWebGLSubImageBinding::XRWebGLSubImage_Binding::XRWebGLSubImageMethods;
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::webgltexture::WebGLTexture;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsubimage::XRSubImage;
 
 #[cfg(feature = "webxr")]

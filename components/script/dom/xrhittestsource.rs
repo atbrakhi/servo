@@ -5,11 +5,12 @@
 use dom_struct::dom_struct;
 #[cfg(feature = "webxr")]
 use webxr_api::HitTestId;
-
+#[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRHitTestSourceBinding::XRHitTestSourceMethods;
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 
 #[cfg(feature = "webxr")]

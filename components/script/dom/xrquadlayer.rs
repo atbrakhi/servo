@@ -3,10 +3,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
-
+#[cfg(feature = "webxr")]
 use crate::dom::xrcompositionlayer::XRCompositionLayer;
 
 #[dom_struct]
+#[cfg(feature = "webxr")]
 pub struct XRQuadLayer {
     composition_layer: XRCompositionLayer,
 }

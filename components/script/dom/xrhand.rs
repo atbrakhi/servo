@@ -11,7 +11,9 @@ use crate::dom::bindings::iterable::Iterable;
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrinputsource::XRInputSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrjointspace::XRJointSpace;
 
 #[cfg(feature = "webxr")]

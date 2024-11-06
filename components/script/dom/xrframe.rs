@@ -17,14 +17,23 @@ use crate::dom::bindings::num::Finite;
 use crate::dom::bindings::reflector::{reflect_dom_object, DomObject, Reflector};
 use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::globalscope::GlobalScope;
+#[cfg(feature = "webxr")]
 use crate::dom::xrhittestresult::XRHitTestResult;
+#[cfg(feature = "webxr")]
 use crate::dom::xrhittestsource::XRHitTestSource;
+#[cfg(feature = "webxr")]
 use crate::dom::xrjointpose::XRJointPose;
+#[cfg(feature = "webxr")]
 use crate::dom::xrjointspace::XRJointSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrpose::XRPose;
+#[cfg(feature = "webxr")]
 use crate::dom::xrreferencespace::XRReferenceSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::{ApiPose, XRSession};
+#[cfg(feature = "webxr")]
 use crate::dom::xrspace::XRSpace;
+#[cfg(feature = "webxr")]
 use crate::dom::xrviewerpose::XRViewerPose;
 
 #[cfg(feature = "webxr")]

@@ -15,16 +15,19 @@ use crate::dom::bindings::root::{Dom, DomRoot};
 use crate::dom::bindings::str::DOMString;
 use crate::dom::event::Event;
 use crate::dom::window::Window;
+#[cfg(feature = "webxr")]
 use crate::dom::xrlayer::XRLayer;
 use crate::script_runtime::CanGc;
 
 // https://w3c.github.io/uievents/#interface-uievent
 #[dom_struct]
+#[cfg(feature = "webxr")]
 pub struct XRLayerEvent {
     event: Event,
     layer: Dom<XRLayer>,
 }
 
+#[cfg(feature = "webxr")]
 impl XRLayerEvent {
     pub fn new_inherited(layer: &XRLayer) -> XRLayerEvent {
         XRLayerEvent {
@@ -64,6 +67,7 @@ impl XRLayerEvent {
     }
 }
 
+#[cfg(feature = "webxr")]
 impl XRLayerEventMethods for XRLayerEvent {
     // https://immersive-web.github.io/layers/#dom-xrlayerevent-layer
     fn Layer(&self) -> DomRoot<XRLayer> {

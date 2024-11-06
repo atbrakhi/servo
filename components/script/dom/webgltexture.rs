@@ -23,6 +23,7 @@ use crate::dom::webgl_validations::types::TexImageTarget;
 use crate::dom::webglframebuffer::WebGLFramebuffer;
 use crate::dom::webglobject::WebGLObject;
 use crate::dom::webglrenderingcontext::{Operation, WebGLRenderingContext};
+#[cfg(feature = "webxr")]
 use crate::dom::xrsession::XRSession;
 
 pub enum TexParameterValue {
@@ -72,6 +73,7 @@ impl WebGLTexture {
     fn new_inherited(
         context: &WebGLRenderingContext,
         id: WebGLTextureId,
+        #[cfg(feature = "webxr")]
         owner: Option<&XRSession>,
     ) -> Self {
         Self {

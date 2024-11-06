@@ -21,8 +21,9 @@ use crate::dom::window::Window;
 use crate::dom::xrsession::ApiRigidTransform;
 use crate::script_runtime::{CanGc, JSContext};
 
-#[cfg(feature = "webxr")]
 #[dom_struct]
+
+#[cfg(feature = "webxr")]
 pub struct XRRigidTransform {
     reflector_: Reflector,
     position: MutNullableDom<DOMPointReadOnly>,
