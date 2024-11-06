@@ -6,6 +6,7 @@ use dom_struct::dom_struct;
 use euclid::Rect;
 #[cfg(feature = "webxr")]
 use webxr_api::Viewport;
+
 #[cfg(feature = "webxr")]
 use crate::dom::bindings::codegen::Bindings::XRViewportBinding::XRViewportMethods;
 use crate::dom::bindings::reflector::{reflect_dom_object, Reflector};

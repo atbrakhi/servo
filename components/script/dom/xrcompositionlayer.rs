@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use dom_struct::dom_struct;
+
 #[cfg(feature = "webxr")]
 use crate::dom::xrlayer::XRLayer;
 

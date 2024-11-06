@@ -74,8 +74,7 @@ impl WebGLTexture {
     fn new_inherited(
         context: &WebGLRenderingContext,
         id: WebGLTextureId,
-        #[cfg(feature = "webxr")]
-        owner: Option<&XRSession>,
+        #[cfg(feature = "webxr")] owner: Option<&XRSession>,
     ) -> Self {
         Self {
             webgl_object: WebGLObject::new_inherited(context),
@@ -94,7 +93,7 @@ impl WebGLTexture {
                         WebGLTextureOwner::WebGL
                     }
                 })
-            .unwrap_or(WebGLTextureOwner::WebGL),
+                .unwrap_or(WebGLTextureOwner::WebGL),
             immutable_levels: Cell::new(None),
             face_count: Cell::new(0),
             base_mipmap_level: 0,
@@ -120,7 +119,8 @@ impl WebGLTexture {
                 context,
                 id,
                 #[cfg(feature = "webxr")]
-                None)),
+                None,
+            )),
             &*context.global(),
         )
     }
