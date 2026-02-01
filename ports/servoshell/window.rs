@@ -92,7 +92,7 @@ impl ServoShellWindow {
             .delegate(state.clone())
             .build();
 
-        #[cfg(feature = "gamepad")]
+        #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
         if let Some(gamepad_provider) = state.gamepad_provider() {
             webview.set_gamepad_provider(gamepad_provider);
         }

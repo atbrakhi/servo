@@ -24,7 +24,7 @@ use servo::{
 };
 use url::Url;
 
-#[cfg(feature = "gamepad")]
+#[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
 pub(crate) use crate::desktop::gamepad::ServoshellGamepadProvider;
 use crate::prefs::{EXPERIMENTAL_PREFS, ServoShellPreferences};
 use crate::webdriver::WebDriverEmbedderControls;
@@ -148,7 +148,7 @@ pub(crate) enum UserInterfaceCommand {
 pub(crate) struct RunningAppState {
     /// The gamepad provider, used for handling gamepad events and set on each WebView.
     /// May be `None` if gamepad support is disabled or failed to initialize.
-    #[cfg(feature = "gamepad")]
+    #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
     gamepad_provider: Option<Rc<ServoshellGamepadProvider>>,
 
     /// The [`WebDriverSenders`] used to reply to pending WebDriver requests.
@@ -205,7 +205,8 @@ impl RunningAppState {
         event_loop_waker: Box<dyn EventLoopWaker>,
         user_content_manager: Rc<UserContentManager>,
         default_preferences: Preferences,
-        #[cfg(feature = "gamepad")] gamepad_provider: Option<Rc<ServoshellGamepadProvider>>,
+        #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
+        gamepad_provider: Option<Rc<ServoshellGamepadProvider>>,
     ) -> Self {
         servo.set_delegate(Rc::new(ServoShellServoDelegate));
 
@@ -226,7 +227,7 @@ impl RunningAppState {
         Self {
             windows: Default::default(),
             focused_window: Default::default(),
-            #[cfg(feature = "gamepad")]
+            #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
             gamepad_provider,
             webdriver_senders: RefCell::default(),
             webdriver_embedder_controls: Default::default(),
@@ -293,7 +294,7 @@ impl RunningAppState {
         &self.servo
     }
 
-    #[cfg(feature = "gamepad")]
+    #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
     pub(crate) fn gamepad_provider(&self) -> Option<Rc<ServoshellGamepadProvider>> {
         self.gamepad_provider.clone()
     }
@@ -359,7 +360,7 @@ impl RunningAppState {
 
         self.handle_webdriver_messages(create_platform_window);
 
-        #[cfg(feature = "gamepad")]
+        #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
         if pref!(dom_gamepad_enabled) {
             self.handle_gamepad_events();
         }
@@ -563,7 +564,7 @@ impl RunningAppState {
         webview.load(url);
     }
 
-    #[cfg(feature = "gamepad")]
+    #[cfg(all(feature = "gamepad", not(any(target_os = "android", target_env = "ohos"))))]
     pub(crate) fn handle_gamepad_events(&self) {
         let Some(gamepad_provider) = self.gamepad_provider.as_ref() else {
             return;
